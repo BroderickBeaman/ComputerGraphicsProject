@@ -28,27 +28,49 @@ function main() {
 	// Get the storage locations of uniform variables
 	var u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
   	var u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
+  	var u_NormalMatrix = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
+  	var u_LightColor = gl.getUniformLocation(gl.program, 'u_LightColor');
+  	var u_LightPosition = gl.getUniformLocation(gl.program, 'u_LightPosition');
+  	var u_AmbientLight = gl.getUniformLocation(gl.program, 'u_AmbientLight');
   	
-  	// UNCOMMENT THIS BLOCK WHEN IMPLEMENTING LIGHTING
-	//if (!u_ModelMatrix || !u_MvpMatrix) {
-	//	console.log('Failed to get the storage location of one or more uniform variables');
-	//	return;
-	//}
+  	//Error if any of the shaders failed to initialize
+  	if (!u_ModelMatrix || !u_MvpMatrix || !u_NormalMatrix || !u_LightColor || !u_LightPosition　|| !u_AmbientLight) { 
+  	    console.log('Failed to get the storage location');
+  	    return;
+  	}
+  	
+    // Set the light color (white)
+    gl.uniform3f(u_LightColor, 0.8, 0.8, 0.8);
+    // Set the light direction (in the world coordinate)
+    gl.uniform3f(u_LightPosition, 5.0, 8.0, 7.0);
+    // Set the ambient light
+    gl.uniform3f(u_AmbientLight, 0.2, 0.2, 0.2);  	
 	
 	// Various matrices
 	var modelMatrix = new Matrix4(); // Model Matrix
 	var mvpMatrix = new Matrix4(); // Model View Projection Matrix
+	var normalMatrix = new Matrix4(); // Transformation matrix for normals
 	
-	// Pass the Model Matrix to u_ModelMatrix
-	gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+	// Calculate the model matrix
+	modelMatrix.setRotate(90, 0, 1, 0); // Rotate around the y-axis
 	
 	// Calculate the View Projection Matrix
 	mvpMatrix.setPerspective(30, canvas.width/canvas.height, 1, 100);
 	mvpMatrix.lookAt(0, 0, 6, 0, 0, 0, 0, 1, 0);
 	mvpMatrix.multiply(modelMatrix);
 	
+	// Calculate the matrix to transform the normal based on the model matrix
+	normalMatrix.setInverseOf(modelMatrix);
+	normalMatrix.transpose();
+	
+	// Pass the model matrix to u_ModelMatrix
+	gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+	
 	// Pass the model view projection matrix to u_MvpMatrix
 	gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
+	
+	// Pass the transformation matrix for normals to u_NormalMatrix
+	gl.uniformMatrix4fv(u_NormalMatrix, false, normalMatrix.elements);
 	
 	// Clear color and depth buffer
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -101,8 +123,11 @@ function initVertexBuffers(gl) {
 		}
 	}
 	
-	// Write the vertex property to buffers
+	// Write the vertex property to buffers (coordinates and normals)
+	// Same data can be used for vertex and normal
+	// In order to make it intelligible, another buffer is prepared separately
 	if (!initArrayBuffer(gl, 'a_Position', new Float32Array(positions), gl.FLOAT, 3)) return -1;
+	if (!initArrayBuffer(gl, 'a_Normal', new Float32Array(positions), gl.FLOAT, 3))  return -1;
 	
 	// Unbind the buffer object
 	gl.bindBuffer(gl.ARRAY_BUFFER, null);
@@ -144,8 +169,6 @@ function initArrayBuffer(gl, attribute, data, type, num) {
 	
 	// Enable the assignment of the buffer object to the attribute variable
 	gl.enableVertexAttribArray(a_attribute);
-	
-	gl. bindBuffer(gl.ARRAY_BUFFER, null);
 	
 	return true;
 }
