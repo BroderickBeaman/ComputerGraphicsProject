@@ -42,7 +42,7 @@ function main() {
     // Set the light color (white)
     gl.uniform3f(u_LightColor, 0.8, 0.8, 0.8);
     // Set the light direction (in the world coordinate)
-    gl.uniform3f(u_LightPosition, 5.0, 8.0, 7.0);
+    gl.uniform3f(u_LightPosition, 0.0, 0.0, 0.0);
     // Set the ambient light
     gl.uniform3f(u_AmbientLight, 0.2, 0.2, 0.2);  
     	
@@ -52,7 +52,7 @@ function main() {
 	
 	// Calculate the View Projection Matrix
 	viewProjMatrix.setPerspective(30, canvas.width/canvas.height, 1, 100);
-	viewProjMatrix.lookAt(0, 0, 6, 0, 0, 0, 0, 1, 0);
+	viewProjMatrix.lookAt(10, 10, 10, 0, 0, 0, 0, 1, 0);
 	
 	draw(gl, n, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix);
 }
@@ -154,12 +154,96 @@ function initArrayBuffer(gl, attribute, data, type, num) {
 // Coordinate transformation matrices
 var g_modelMatrix = new Matrix4(), g_mvpMatrix = new Matrix4();
 
+// Relative scale of the sun
+var sunScale = 0.2 
+
+// Overall speed of the orbits
+var globalOrbitVelocity = 1;
+
+// Global scale of orbital distances
+var globalOrbitDistance = 3;
+
+// Angles of rotation around the sun
+var planet1OrbitAngle = 0;
+var planet2OrbitAngle = 0;
+var planet3OrbitAngle = 0;
+var planet4OrbitAngle = 0;
+var planet5OrbitAngle = 0;
+var planet6OrbitAngle = 0;
+var planet7OrbitAngle = 0;
+var planet8OrbitAngle = 0;
+
+// Planetary orbit velocities
+var planet1OrbitVelocity = 4.16; // Mercury's actual orbital velocity (relative to Earth)
+var planet2OrbitVelocity = 1.62; // Venus' actual orbital velocity (relative to Earth)
+var planet3OrbitVelocity = 1; // Earth's orbital velocity
+var planet4OrbitVelocity = 0.532; // Mars' actual orbital velocity (relative to Earth)
+var planet5OrbitVelocity = 0.084; // Jupiter's actual orbital velocity (relative to Earth)
+var planet6OrbitVelocity = 0.04; // Saturns actual orbital velocity (relative to Earth)
+var planet7OrbitVelocity = 0.012; // Uranus' actual orbital velocity (relative to Earth)
+var planet8OrbitVelocity = 0.006; // Neptune's actual orbital velocity (relative to Earth)
+
+// Planetary orbit distances
+var planet1OrbitDistance = globalOrbitDistance * 0.38; // Mercury's average orbital distance (in AU)
+var planet2OrbitDistance = globalOrbitDistance * 0.723; // Venus' average orbital distance (in AU)
+var planet3OrbitDistance = globalOrbitDistance * 1; // Earth's average orbital distance (in AU)
+var planet4OrbitDistance = globalOrbitDistance * 1.45; // Mars' average orbital distance (in AU)
+var planet5OrbitDistance = globalOrbitDistance * 5.075; // Jupiter's average orbital distance (in AU)
+var planet6OrbitDistance = globalOrbitDistance * 9.575; // Saturn's average orbital distance (in AU)
+var planet7OrbitDistance = globalOrbitDistance * 19.22; // Uranus' average orbital distance (in AU)
+var planet8OrbitDistance = globalOrbitDistance * 30; // Neptune's average orbital distance (in AU)
+
 function draw(gl, n, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix) {
+
+	// Recompute planetary rotation angles
+	planet1OrbitAngle = (planet1OrbitAngle + (planet1OrbitVelocity * globalOrbitVelocity)) % 360;
+	planet2OrbitAngle = (planet2OrbitAngle + (planet2OrbitVelocity * globalOrbitVelocity)) % 360;
+	planet3OrbitAngle = (planet3OrbitAngle + (planet3OrbitVelocity * globalOrbitVelocity)) % 360;
+	planet4OrbitAngle = (planet4OrbitAngle + (planet4OrbitVelocity * globalOrbitVelocity)) % 360;
+	planet5OrbitAngle = (planet5OrbitAngle + (planet5OrbitVelocity * globalOrbitVelocity)) % 360;
+	planet6OrbitAngle = (planet6OrbitAngle + (planet6OrbitVelocity * globalOrbitVelocity)) % 360;
+	planet7OrbitAngle = (planet7OrbitAngle + (planet7OrbitVelocity * globalOrbitVelocity)) % 360;
+	planet8OrbitAngle = (planet8OrbitAngle + (planet8OrbitVelocity * globalOrbitVelocity)) % 360;
+
 	// Clear color and depth buffer
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	g_modelMatrix.setIdentity();
 	
-	drawSphere(gl, n, 1, viewProjMatrix, u_ModelMatrix,  u_MvpMatrix, u_NormalMatrix);
+	// Draw the sun
+	drawSphere(gl, n, sunScale, viewProjMatrix, u_ModelMatrix,  u_MvpMatrix, u_NormalMatrix);
+	
+	// Draw planet 1
+	pushMatrix(g_modelMatrix);
+	g_modelMatrix.rotate(planet1OrbitAngle, 0, 1, 0);
+	g_modelMatrix.translate(planet1OrbitDistance, 0, 0);
+	drawSphere(gl, n, sunScale/3, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix);
+	g_modelMatrix = popMatrix();
+	
+	// Draw planet 2
+	pushMatrix(g_modelMatrix);
+	g_modelMatrix.rotate(planet2OrbitAngle, 0, 1, 0);
+	g_modelMatrix.translate(planet2OrbitDistance, 0, 0);
+	drawSphere(gl, n, sunScale/3, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix);
+	g_modelMatrix = popMatrix();
+	
+	// Draw planet 3
+	pushMatrix(g_modelMatrix);
+	g_modelMatrix.rotate(planet3OrbitAngle, 0, 1, 0);
+	g_modelMatrix.translate(planet3OrbitDistance, 0, 0);
+	drawSphere(gl, n, sunScale/3, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix);
+	g_modelMatrix = popMatrix();
+	
+	// Draw planet 3
+	pushMatrix(g_modelMatrix);
+	g_modelMatrix.rotate(planet4OrbitAngle, 0, 1, 0);
+	g_modelMatrix.translate(planet4OrbitDistance, 0, 0);
+	drawSphere(gl, n, sunScale/3, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix);
+	g_modelMatrix = popMatrix();
+	
+	// Recursive call happens every 1/60 of a second (60 fps)
+	setTimeout(function() {
+		draw(gl, n, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix);
+	}, 1000/60);
 }
 
 var g_matrixStack = []; // Array for storing matrices
@@ -191,7 +275,6 @@ function drawSphere(gl, n, scale, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_
 	g_normalMatrix.transpose();
 	gl.uniformMatrix4fv(u_NormalMatrix, false, g_normalMatrix.elements);
 	
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	
 	// Draw
 	gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_SHORT, 0);
