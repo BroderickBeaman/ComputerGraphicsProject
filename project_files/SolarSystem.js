@@ -44,39 +44,17 @@ function main() {
     // Set the light direction (in the world coordinate)
     gl.uniform3f(u_LightPosition, 5.0, 8.0, 7.0);
     // Set the ambient light
-    gl.uniform3f(u_AmbientLight, 0.2, 0.2, 0.2);  	
-	
-	// Various matrices
-	var modelMatrix = new Matrix4(); // Model Matrix
-	var mvpMatrix = new Matrix4(); // Model View Projection Matrix
-	var normalMatrix = new Matrix4(); // Transformation matrix for normals
+    gl.uniform3f(u_AmbientLight, 0.2, 0.2, 0.2);  
+    	
+	var viewProjMatrix = new Matrix4(); // Model View Projection Matrix
 	
 	// Calculate the model matrix
-	modelMatrix.setRotate(90, 0, 1, 0); // Rotate around the y-axis
 	
 	// Calculate the View Projection Matrix
-	mvpMatrix.setPerspective(30, canvas.width/canvas.height, 1, 100);
-	mvpMatrix.lookAt(0, 0, 6, 0, 0, 0, 0, 1, 0);
-	mvpMatrix.multiply(modelMatrix);
+	viewProjMatrix.setPerspective(30, canvas.width/canvas.height, 1, 100);
+	viewProjMatrix.lookAt(0, 0, 6, 0, 0, 0, 0, 1, 0);
 	
-	// Calculate the matrix to transform the normal based on the model matrix
-	normalMatrix.setInverseOf(modelMatrix);
-	normalMatrix.transpose();
-	
-	// Pass the model matrix to u_ModelMatrix
-	gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
-	
-	// Pass the model view projection matrix to u_MvpMatrix
-	gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
-	
-	// Pass the transformation matrix for normals to u_NormalMatrix
-	gl.uniformMatrix4fv(u_NormalMatrix, false, normalMatrix.elements);
-	
-	// Clear color and depth buffer
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-	
-	// Draw the sphere(Note that the 3rd argument is the gl.UNSIGNED_SHORT)
-	gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_SHORT, 0);
+	draw(gl, n, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix);
 }
 
 // Code to create a sphere
@@ -172,4 +150,60 @@ function initArrayBuffer(gl, attribute, data, type, num) {
 	
 	return true;
 }
+
+// Coordinate transformation matrices
+var g_modelMatrix = new Matrix4(), g_mvpMatrix = new Matrix4();
+
+function draw(gl, n, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix) {
+	// Clear color and depth buffer
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	g_modelMatrix.setIdentity();
+	
+	drawSphere(gl, n, 1, viewProjMatrix, u_ModelMatrix,  u_MvpMatrix, u_NormalMatrix);
+}
+
+var g_matrixStack = []; // Array for storing matrices
+function pushMatrix(m) { // Store a matrix
+	var m2 = new Matrix4(m);
+	g_matrixStack.push(m2);
+}
+
+function popMatrix() { // Retrieve a stored matrix
+	return g_matrixStack.pop();
+}
+
+var g_normalMatrix = new Matrix4(); // The normal matrix
+
+function drawSphere(gl, n, scale, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix) {
+	pushMatrix(g_modelMatrix); // Save the state of the current model matrix
+	g_modelMatrix.scale(scale, scale, scale); // Resize the sphere
+	
+	// Pass the model matrix to u_ModelMatrix
+	gl.uniformMatrix4fv(u_ModelMatrix, false, g_modelMatrix.elements);
+	
+	// Calculate MVP matrix
+	g_mvpMatrix.set(viewProjMatrix);
+	g_mvpMatrix.multiply(g_modelMatrix);
+	gl.uniformMatrix4fv(u_MvpMatrix, false, g_mvpMatrix.elements);
+	
+	// Calculate the normal matrix
+	g_normalMatrix.setInverseOf(g_modelMatrix);
+	g_normalMatrix.transpose();
+	gl.uniformMatrix4fv(u_NormalMatrix, false, g_normalMatrix.elements);
+	
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	
+	// Draw
+	gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_SHORT, 0);
+	g_modelMatrix = popMatrix();  // Retrieve the old model matrix
+}
+
+
+
+
+
+
+
+
+
 
