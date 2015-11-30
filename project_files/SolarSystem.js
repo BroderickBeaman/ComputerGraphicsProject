@@ -52,7 +52,7 @@ function main() {
 	
 	// Calculate the View Projection Matrix
 	viewProjMatrix.setPerspective(30, canvas.width/canvas.height, 1, 100);
-	viewProjMatrix.lookAt(10, 10, 10, 0, 0, 0, 0, 1, 0);
+	viewProjMatrix.lookAt(0, 10, 14, 0, 0, 0, 0, 1, 0);
 	
 	// Register the event handler for keystrokes
 	document.onkeydown = function(ev) { keydown(ev); };
