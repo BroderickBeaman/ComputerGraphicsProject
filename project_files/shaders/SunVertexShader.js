@@ -1,5 +1,6 @@
 // Vertex Shader Source
-var VSHADER_SOURCE_SUN = 
+var VSHADER_SOURCE = [];
+VSHADER_SOURCE[0] = 
 	'attribute vec4 a_Position;\n' +
 	'attribute vec4 a_Normal;\n' +
 	'uniform mat4 u_MvpMatrix;\n' +
@@ -9,7 +10,7 @@ var VSHADER_SOURCE_SUN =
 	'varying vec3 v_Normal;\n' +
 	'varying vec3 v_Position;\n' +
 	'void main() {\n' +
-	'  vec4 color = vec4(1.0, 1.0, 1.0, 1.0);\n' +  // Sphere Color
+	'  vec4 color = vec4(1.0, 1.0, 0, 1.0);\n' +  // Sphere Color
 	'  gl_Position = u_MvpMatrix * a_Position;\n' +
 	   // Calculate the vertex position in the world coordinate
 	'  v_Position = vec3(u_ModelMatrix * a_Position);\n' +

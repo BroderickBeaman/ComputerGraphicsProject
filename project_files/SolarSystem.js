@@ -1,3 +1,5 @@
+var program;
+
 function main() {
 	// Retrieve <canvas> element
 	var canvas = document.getElementById('webgl');
@@ -8,43 +10,63 @@ function main() {
 		console.log('Failed to get the rendering context for WebGL');
 		return;
 	}
-  
-	// Initialize shaders
-	if (!initShaders(gl, VSHADER_SOURCE_SUN, FSHADER_SOURCE_SUN)) {
-		console.log('Failed to initialize shaders.');
+	
+	var count = 0;
+	
+	var u_ModelMatrix = [];
+  	var u_MvpMatrix = [];
+  	var u_NormalMatrix = [];
+  	var u_LightColor = [];
+  	var u_LightPosition = [];
+  	var u_AmbientLight = [];
+	
+	while( count < VSHADER_SOURCE.length)
+	{
+		// Initialize shaders
+		program = initShaders(gl, VSHADER_SOURCE[count], FSHADER_SOURCE[count], count);
+		
+		// Set clear color and enable the depth test
+		gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		gl.enable(gl.DEPTH_TEST);
+	  	
+		// Get the storage locations of uniform variables
+		u_ModelMatrix[count] = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
+	  	u_MvpMatrix[count] = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
+	  	u_NormalMatrix[count] = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
+	  	u_LightColor[count] = gl.getUniformLocation(gl.program, 'u_LightColor');
+	  	u_LightPosition[count] = gl.getUniformLocation(gl.program, 'u_LightPosition');
+	  	u_AmbientLight[count] = gl.getUniformLocation(gl.program, 'u_AmbientLight');
+
+	  	if(count){
+		   	// Set the light color (white)
+			gl.uniform3f(u_LightColor[count], 0.8, 0.8, 0.8);
+			// Set the light direction (in the world coordinate)
+			gl.uniform3f(u_LightPosition[count], 0.0, 0.0, 0.0);
+			// Set the ambient light
+			gl.uniform3f(u_AmbientLight[count], 0.2, 0.2, 0.2);
+	  	}else{
+		   	// Set the light color (white)
+			gl.uniform3f(u_LightColor[count], 1.0, 0.5, 0);
+			// Set the light direction (in the world coordinate)
+			gl.uniform3f(u_LightPosition[count], 0, 0.8, 0.8);
+			// Set the ambient light
+			gl.uniform3f(u_AmbientLight[count], 1.0, 0.5, 0);
+	  	}
+	  	
+	  	//Error if any of the shaders failed to initialize
+	  	if (!u_ModelMatrix[count] || !u_MvpMatrix[count] || !u_NormalMatrix[count] || !u_LightColor[count] || !u_LightPosition[count]　|| !u_AmbientLight[count]) { 
+	  	    console.log('Failed to get the storage location' + count);
+	  	    return;
+	  	}
+	  	count++;
 	}
-  
+	
 	// Set the vertex coordinates and the color.
 	var n = initVertexBuffers(gl);
 	if (n < 0) {
 		console.log('Failed to set the vertex information');
 		return;
 	}
-	
-	// Set clear color and enable the depth test
-	gl.clearColor(0.0, 0.0, 0.0, 1.0);
-	gl.enable(gl.DEPTH_TEST);
-	
-	// Get the storage locations of uniform variables
-	var u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
-  	var u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
-  	var u_NormalMatrix = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
-  	var u_LightColor = gl.getUniformLocation(gl.program, 'u_LightColor');
-  	var u_LightPosition = gl.getUniformLocation(gl.program, 'u_LightPosition');
-  	var u_AmbientLight = gl.getUniformLocation(gl.program, 'u_AmbientLight');
-  	
-  	//Error if any of the shaders failed to initialize
-  	if (!u_ModelMatrix || !u_MvpMatrix || !u_NormalMatrix || !u_LightColor || !u_LightPosition　|| !u_AmbientLight) { 
-  	    console.log('Failed to get the storage location');
-  	    return;
-  	}
-  	
-   	// Set the light color (white)
-    	gl.uniform3f(u_LightColor, 0.8, 0.8, 0.8);
-    	// Set the light direction (in the world coordinate)
-    	gl.uniform3f(u_LightPosition, 0.0, 0.0, 0.0);
-    	// Set the ambient light
-    	gl.uniform3f(u_AmbientLight, 0.2, 0.2, 0.2);  
     	
 	var viewProjMatrix = new Matrix4(); // Model View Projection Matrix
 	
@@ -176,35 +198,38 @@ var globalOrbitVelocityStep = 0.1;
 var globalOrbitDistance = 3;
 var globalOrbitDistanceStep = 0.1;
 
+var planetOrbitAngle = [];
 // Angles of rotation around the sun
-var planet1OrbitAngle = 0;
-var planet2OrbitAngle = 0;
-var planet3OrbitAngle = 0;
-var planet4OrbitAngle = 0;
-var planet5OrbitAngle = 0;
-var planet6OrbitAngle = 0;
-var planet7OrbitAngle = 0;
-var planet8OrbitAngle = 0;
+planetOrbitAngle[0] = 0;
+planetOrbitAngle[1] = 0;
+planetOrbitAngle[2] = 0;
+planetOrbitAngle[3] = 0;
+planetOrbitAngle[4] = 0;
+planetOrbitAngle[5] = 0;
+planetOrbitAngle[6] = 0;
+planetOrbitAngle[7] = 0;
 
+var planetOrbitVelocity = [];
 // Planetary orbit velocities
-var planet1OrbitVelocity = 4.16; // Mercury's actual orbital velocity (relative to Earth)
-var planet2OrbitVelocity = 1.62; // Venus' actual orbital velocity (relative to Earth)
-var planet3OrbitVelocity = 1; // Earth's orbital velocity
-var planet4OrbitVelocity = 0.532; // Mars' actual orbital velocity (relative to Earth)
-var planet5OrbitVelocity = 0.084; // Jupiter's actual orbital velocity (relative to Earth)
-var planet6OrbitVelocity = 0.04; // Saturns actual orbital velocity (relative to Earth)
-var planet7OrbitVelocity = 0.012; // Uranus' actual orbital velocity (relative to Earth)
-var planet8OrbitVelocity = 0.006; // Neptune's actual orbital velocity (relative to Earth)
+planetOrbitVelocity[0] = 4.16; // Mercury's actual orbital velocity (relative to Earth)
+planetOrbitVelocity[1] = 1.62; // Venus' actual orbital velocity (relative to Earth)
+planetOrbitVelocity[2] = 1; // Earth's orbital velocity
+planetOrbitVelocity[3] = 0.532; // Mars' actual orbital velocity (relative to Earth)
+planetOrbitVelocity[4] = 0.084; // Jupiter's actual orbital velocity (relative to Earth)
+planetOrbitVelocity[5] = 0.04; // Saturns actual orbital velocity (relative to Earth)
+planetOrbitVelocity[6] = 0.012; // Uranus' actual orbital velocity (relative to Earth)
+planetOrbitVelocity[7] = 0.006; // Neptune's actual orbital velocity (relative to Earth)
 
+var planetOrbitDistance = [];
 // Planetary orbit distances
-var planet1OrbitDistance = 0.38; // Mercury's average orbital distance (in AU)
-var planet2OrbitDistance = 0.723; // Venus' average orbital distance (in AU)
-var planet3OrbitDistance = 1; // Earth's average orbital distance (in AU)
-var planet4OrbitDistance = 1.45; // Mars' average orbital distance (in AU)
-var planet5OrbitDistance = 5.075; // Jupiter's average orbital distance (in AU)
-var planet6OrbitDistance = 9.575; // Saturn's average orbital distance (in AU)
-var planet7OrbitDistance = 19.22; // Uranus' average orbital distance (in AU)
-var planet8OrbitDistance = 30; // Neptune's average orbital distance (in AU)
+planetOrbitDistance[0] = 0.38; // Mercury's average orbital distance (in AU)
+planetOrbitDistance[1] = 0.723; // Venus' average orbital distance (in AU)
+planetOrbitDistance[2] = 1; // Earth's average orbital distance (in AU)
+planetOrbitDistance[3] = 1.45; // Mars' average orbital distance (in AU)
+planetOrbitDistance[4] = 5.075; // Jupiter's average orbital distance (in AU)
+planetOrbitDistance[5] = 9.575; // Saturn's average orbital distance (in AU)
+planetOrbitDistance[6] = 19.22; // Uranus' average orbital distance (in AU)
+planetOrbitDistance[7] = 30; // Neptune's average orbital distance (in AU)
 
 function draw(gl, n, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix) {
 
@@ -213,49 +238,34 @@ function draw(gl, n, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix)
 	}
 
 	// Recompute planetary rotation angles
-	planet1OrbitAngle = (planet1OrbitAngle + (planet1OrbitVelocity * globalOrbitVelocity)) % 360;
-	planet2OrbitAngle = (planet2OrbitAngle + (planet2OrbitVelocity * globalOrbitVelocity)) % 360;
-	planet3OrbitAngle = (planet3OrbitAngle + (planet3OrbitVelocity * globalOrbitVelocity)) % 360;
-	planet4OrbitAngle = (planet4OrbitAngle + (planet4OrbitVelocity * globalOrbitVelocity)) % 360;
-	planet5OrbitAngle = (planet5OrbitAngle + (planet5OrbitVelocity * globalOrbitVelocity)) % 360;
-	planet6OrbitAngle = (planet6OrbitAngle + (planet6OrbitVelocity * globalOrbitVelocity)) % 360;
-	planet7OrbitAngle = (planet7OrbitAngle + (planet7OrbitVelocity * globalOrbitVelocity)) % 360;
-	planet8OrbitAngle = (planet8OrbitAngle + (planet8OrbitVelocity * globalOrbitVelocity)) % 360;
+	var i = 0;
+	do{
+		planetOrbitAngle[i] = (planetOrbitAngle[i] + (planetOrbitVelocity[i] * globalOrbitVelocity)) % 360;
+	}while(++i < planetOrbitAngle.length)
 	
 	// Clear color and depth buffer
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	g_modelMatrix.setIdentity();
 	
+	i = 0;
+	
 	// Draw the sun
-	drawSphere(gl, n, sunScale, viewProjMatrix, u_ModelMatrix,  u_MvpMatrix, u_NormalMatrix);
+	gl.useProgram(program[i]);
+	gl.program = program[i];
+	drawSphere(gl, n, sunScale, viewProjMatrix, u_ModelMatrix[i],  u_MvpMatrix[i], u_NormalMatrix[i]);
 	
-	// Draw planet 1
-	pushMatrix(g_modelMatrix);
-	g_modelMatrix.rotate(planet1OrbitAngle, 0, 1, 0);
-	g_modelMatrix.translate(planet1OrbitDistance * globalOrbitDistance, 0, 0);
-	drawSphere(gl, n, sunScale/sunToPlanetScale, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix);
-	g_modelMatrix = popMatrix();
-	
-	// Draw planet 2
-	pushMatrix(g_modelMatrix);
-	g_modelMatrix.rotate(planet2OrbitAngle, 0, 1, 0);
-	g_modelMatrix.translate(planet2OrbitDistance * globalOrbitDistance, 0, 0);
-	drawSphere(gl, n, sunScale/sunToPlanetScale, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix);
-	g_modelMatrix = popMatrix();
-	
-	// Draw planet 3
-	pushMatrix(g_modelMatrix);
-	g_modelMatrix.rotate(planet3OrbitAngle, 0, 1, 0);
-	g_modelMatrix.translate(planet3OrbitDistance * globalOrbitDistance, 0, 0);
-	drawSphere(gl, n, sunScale/sunToPlanetScale, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix);
-	g_modelMatrix = popMatrix();
-	
-	// Draw planet 3
-	pushMatrix(g_modelMatrix);
-	g_modelMatrix.rotate(planet4OrbitAngle, 0, 1, 0);
-	g_modelMatrix.translate(planet4OrbitDistance * globalOrbitDistance, 0, 0);
-	drawSphere(gl, n, sunScale/sunToPlanetScale, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix);
-	g_modelMatrix = popMatrix();
+	while(++i < program.length){
+
+		gl.useProgram(program[i]);
+		gl.program = program[i];
+		
+		// Draw planet i
+		pushMatrix(g_modelMatrix);
+		g_modelMatrix.rotate(planetOrbitAngle[i-1], 0, 1, 0);
+		g_modelMatrix.translate(planetOrbitDistance[i-1] * globalOrbitDistance, 0, 0);
+		drawSphere(gl, n, sunScale/sunToPlanetScale, viewProjMatrix, u_ModelMatrix[i], u_MvpMatrix[i], u_NormalMatrix[i]);
+		g_modelMatrix = popMatrix();
+	}
 	
 	// Recursive call happens every 1/60 of a second (60 fps)
 	setTimeout(function() {
@@ -291,7 +301,6 @@ function drawSphere(gl, n, scale, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_
 	g_normalMatrix.setInverseOf(g_modelMatrix);
 	g_normalMatrix.transpose();
 	gl.uniformMatrix4fv(u_NormalMatrix, false, g_normalMatrix.elements);
-	
 	
 	// Draw
 	gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_SHORT, 0);
