@@ -6,7 +6,7 @@
   </head>
 
   <body onload="main()">
-    <canvas id="webgl" width="800" height="800">
+    <canvas id="webgl" width="800" height="800" style="float: left">
     Please use a browser that supports "canvas"
     </canvas>
 
@@ -18,5 +18,19 @@
     <script src="shaders/PlanetVertexShader.js"></script>
     <script src="shaders/SunFragmentShader.js"></script>
     <script src="SolarSystem.js"></script>
+    
+    <div style="float: left; padding-left: 10px">
+    	Controls:<br><br>
+    	Q: Decrease speed<br>
+    	W: Increase speed<br><br>
+    	A: Shrink orbital distances<br>
+    	S: Expand orbital distances<br><br>
+    	Z: Scale planets up<br>
+    	X: Scale planets down<br><br>
+    	Left: Zoom out<br>
+    	Right: Zoom in<br><br>
+    	Up: Rotate camera up<br>
+    	Down: Rotate camera down<br>
+    </div>
   </body>
 </html>

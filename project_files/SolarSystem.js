@@ -54,7 +54,7 @@ function main() {
 	  	}
 	  	
 	  	//Error if any of the shaders failed to initialize
-	  	if (!u_ModelMatrix[count] || !u_MvpMatrix[count] || !u_NormalMatrix[count] || !u_LightColor[count] || !u_LightPosition[count]　|| !u_AmbientLight[count]) { 
+	  	if (!u_ModelMatrix[count] || !u_MvpMatrix[count] || !u_NormalMatrix[count] || !u_LightColor[count] || !u_LightPosition[count] || !u_AmbientLight[count]) { 
 	  	    console.log('Failed to get the storage location' + count);
 	  	    return;
 	  	}
@@ -70,8 +70,6 @@ function main() {
     	
 	var viewProjMatrix = new Matrix4(); // Model View Projection Matrix
 	
-	// Calculate the model matrix
-	
 	// Calculate the View Projection Matrix
 	viewProjMatrix.setPerspective(30, canvas.width/canvas.height, 1, 100);
 	viewProjMatrix.lookAt(0, 10, 14, 0, 0, 0, 0, 1, 0);
@@ -79,7 +77,7 @@ function main() {
 	// Register the event handler for keystrokes
 	document.onkeydown = function(ev) { keydown(ev); };
 	
-	draw(gl, n, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix);
+	draw(gl, n, canvas.height, canvas.width, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix);
 }
 
 // Code to create a sphere
@@ -180,6 +178,13 @@ function initArrayBuffer(gl, attribute, data, type, num) {
 //* Orbital Values                                                    *
 //*********************************************************************
 
+// View Projection Matrix
+var viewProjMatrix = new Matrix4();
+var viewingAngle = 0.0; // In Degrees
+var viewingDistance = 20;
+var viewingAngleStep = 1; // In Degrees
+var viewingDistanceStep = 0.5;
+
 // Coordinate transformation matrices
 var g_modelMatrix = new Matrix4(), g_mvpMatrix = new Matrix4();
 
@@ -231,7 +236,11 @@ planetOrbitDistance[5] = 9.575; // Saturn's average orbital distance (in AU)
 planetOrbitDistance[6] = 19.22; // Uranus' average orbital distance (in AU)
 planetOrbitDistance[7] = 30; // Neptune's average orbital distance (in AU)
 
-function draw(gl, n, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix) {
+function draw(gl, n, canvasHeight, canvasWidth, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix) {
+	
+	// Calculate the View Projection Matrix
+	viewProjMatrix.setPerspective(30, canvasWidth/canvasHeight, 1, 100);
+	viewProjMatrix.lookAt(0, Math.sin(viewingAngle * Math.PI / 180) * viewingDistance, Math.cos(viewingAngle * Math.PI / 180) * viewingDistance, 0, 0, 0, 0, 1, 0);
 
 	if (globalOrbitVelocity < 0) {
 		globalOrbitVelocity = 0;
@@ -241,7 +250,7 @@ function draw(gl, n, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix)
 	var i = 0;
 	do{
 		planetOrbitAngle[i] = (planetOrbitAngle[i] + (planetOrbitVelocity[i] * globalOrbitVelocity)) % 360;
-	}while(++i < planetOrbitAngle.length)
+	}while(++i < planetOrbitAngle.length);
 	
 	// Clear color and depth buffer
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -269,7 +278,7 @@ function draw(gl, n, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix)
 	
 	// Recursive call happens every 1/60 of a second (60 fps)
 	setTimeout(function() {
-		draw(gl, n, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix);
+		draw(gl, n, canvasHeight, canvasWidth, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix);
 	}, 1000/60);
 }
 
@@ -332,6 +341,22 @@ function keydown(ev) {
 		case 88 : // X: Grow the planets relative to the sun
 			sunToPlanetScale += sunToPlanetScaleStep;
 			console.log('Sun to planet scale = ' + sunToPlanetScale);
+			break;
+		case 37 : // Left Arrow: Zoom out
+			viewingDistance += viewingDistanceStep;
+			console.log('Viewing distance: ' + viewingDistance);
+			break;
+		case 39 : // Right Arrow: Zoom in
+			viewingDistance -= viewingDistanceStep;
+			console.log('Viewing distance: ' + viewingDistance);
+			break;
+		case 38 : // Up Arrow: Rotate camera "upwards"
+			viewingAngle = viewingAngle >= 89 ? viewingAngle : viewingAngle + viewingAngleStep;
+			console.log('Viewing angle: ' + Math.sin(viewingAngle));
+			break;
+		case 40 : // Down Arrow: Rotate camera "downwards"
+			viewingAngle = viewingAngle <= -89 ? viewingAngle : viewingAngle - viewingAngleStep;
+			console.log('Viewing angle: ' + Math.sin(viewingAngle));
 			break;
 		default : return; // No action
 	}
