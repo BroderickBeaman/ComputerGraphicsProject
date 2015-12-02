@@ -75,7 +75,12 @@ function main() {
 	viewProjMatrix.lookAt(0, 10, 14, 0, 0, 0, 0, 1, 0);
 	
 	// Register the event handler for keystrokes
-	document.onkeydown = function(ev) { keydown(ev); };
+	window.addEventListener('keydown', function(ev){
+		keydown(ev);
+	}, true);
+	window.addEventListener('keyup', function(ev){
+		keyup(ev);
+	}, true);
 	
 	draw(gl, n, canvas.height, canvas.width, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix);
 }
@@ -83,7 +88,7 @@ function main() {
 // Code to create a sphere
 function initVertexBuffers(gl) {
 	// Increase to make spheres more smooth
-	var SPHERE_DIV = 13;
+	var SPHERE_DIV = 20;
 	
 	var i, ai, si, ci;
 	var j, aj, sj, cj;
@@ -180,10 +185,13 @@ function initArrayBuffer(gl, attribute, data, type, num) {
 
 // View Projection Matrix
 var viewProjMatrix = new Matrix4();
-var viewingAngle = 0.0; // In Degrees
+var viewingAngle = 10; // In Degrees
 var viewingDistance = 20;
-var viewingAngleStep = 1; // In Degrees
-var viewingDistanceStep = 0.5;
+var viewingAngleStep = 0.5; // In Degrees
+var viewingDistanceStep = 0.25;
+var minViewingDistance = 2;
+var minViewingAngle = -89;
+var maxViewingAngle = 89;
 
 // Coordinate transformation matrices
 var g_modelMatrix = new Matrix4(), g_mvpMatrix = new Matrix4();
@@ -193,15 +201,15 @@ var sunScale = 0.2;
 
 // How large is the sun vs the planets (globally)
 var sunToPlanetScale = 3;
-var sunToPlanetScaleStep = 0.1;
 
 // Overall speed of the orbits
 var globalOrbitVelocity = 1;
-var globalOrbitVelocityStep = 0.1;
+var globalOrbitVelocityStep = 0.02;
 
 // Global scale of orbital distances
 var globalOrbitDistance = 3;
 var globalOrbitDistanceStep = 0.1;
+var minGlobalOrbitDistance = 0.8;
 
 var planetOrbitAngle = [];
 // Angles of rotation around the sun
@@ -254,13 +262,12 @@ function draw(gl, n, canvasHeight, canvasWidth, u_ModelMatrix, u_MvpMatrix, u_No
 	}
 	lastTime = currentTime;
 	
+	// Process what keys are pressed
+	keyEvent();
+	
 	// Calculate the View Projection Matrix
 	viewProjMatrix.setPerspective(30, canvasWidth/canvasHeight, 1, 100);
 	viewProjMatrix.lookAt(0, Math.sin(viewingAngle * Math.PI / 180) * viewingDistance, Math.cos(viewingAngle * Math.PI / 180) * viewingDistance, 0, 0, 0, 0, 1, 0);
-
-	if (globalOrbitVelocity < 0) {
-		globalOrbitVelocity = 0;
-	}
 
 	// Recompute planetary rotation angles
 	var i = 0;
@@ -332,60 +339,113 @@ function drawSphere(gl, n, scale, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_
 	g_modelMatrix = popMatrix();  // Retrieve the old model matrix
 }
 
+var keys = {
+		q: false,
+		w: false,
+		a: false,
+		s: false,
+		up: false,
+		down: false,
+		left: false,
+		right: false
+};
+
 function keydown(ev) {
 	switch (ev.keyCode) {
 		case 81 : // Q: Decrease the demo speed
-			globalOrbitVelocity -= globalOrbitVelocityStep;
-			console.log('Global orbit velocity = ' + globalOrbitVelocity);
+			keys["q"] = true;
 			break;
 		case 87 : // W: Increase the demo speed
-			globalOrbitVelocity += globalOrbitVelocityStep;
-			console.log('Global orbit velocity = ' + globalOrbitVelocity);
+			keys["w"] = true;
 			break;
 		case 65 : // A: Globally give the planets a tighter orbit
-			globalOrbitDistance -= globalOrbitDistanceStep;
-			console.log('Global orbit distance scale = ' + globalOrbitDistance);
+			keys["a"] = true;
 			break;
 		case 83 : // S: Globally give the planets a wider orbit
-			globalOrbitDistance += globalOrbitDistanceStep;
-			console.log('Global orbit distance scale = ' + globalOrbitDistance);
-			break;
-		case 90 : // Z: Shrink the planets relative to the sun
-			sunToPlanetScale -= sunToPlanetScaleStep;
-			console.log('Sun to planet scale = ' + sunToPlanetScale);
-			break;
-		case 88 : // X: Grow the planets relative to the sun
-			sunToPlanetScale += sunToPlanetScaleStep;
-			console.log('Sun to planet scale = ' + sunToPlanetScale);
+			keys["s"] = true;
 			break;
 		case 37 : // Left Arrow: Zoom out
 			ev.preventDefault();
-			viewingDistance += viewingDistanceStep;
-			console.log('Viewing distance: ' + viewingDistance);
+			keys["left"] = true;
 			break;
 		case 39 : // Right Arrow: Zoom in
 			ev.preventDefault();
-			viewingDistance -= viewingDistanceStep;
-			console.log('Viewing distance: ' + viewingDistance);
+			keys["right"] = true;
 			break;
 		case 38 : // Up Arrow: Rotate camera "upwards"
 			ev.preventDefault();
-			viewingAngle = viewingAngle >= 89 ? viewingAngle : viewingAngle + viewingAngleStep;
-			console.log('Viewing angle: ' + viewingAngle);
+			keys["up"] = true;
 			break;
 		case 40 : // Down Arrow: Rotate camera "downwards"
 			ev.preventDefault();
-			viewingAngle = viewingAngle <= -89 ? viewingAngle : viewingAngle - viewingAngleStep;
-			console.log('Viewing angle: ' + viewingAngle);
+			keys["down"] = true;
 			break;
 		default : return; // No action
 	}
 }
 
+function keyup(ev) {
+	switch (ev.keyCode) {
+		case 81 : // Q: Decrease the demo speed
+			keys["q"] = false;
+			break;
+		case 87 : // W: Increase the demo speed
+			keys["w"] = false;
+			break;
+		case 65 : // A: Globally give the planets a tighter orbit
+			keys["a"] = false;
+			break;
+		case 83 : // S: Globally give the planets a wider orbit
+			keys["s"] = false;
+			break;
+		case 37 : // Left Arrow: Zoom out
+			keys["left"] = false;
+			break;
+		case 39 : // Right Arrow: Zoom in
+			keys["right"] = false;
+			break;
+		case 38 : // Up Arrow: Rotate camera "upwards"
+			keys["up"] = false;
+			break;
+		case 40 : // Down Arrow: Rotate camera "downwards"
+			keys["down"] = false;
+			break;
+		default : return; // No action
+	}
+}
 
-
-
-
-
-
-
+function keyEvent() {
+	if (keys["q"]) { // Q: Decrease the demo speed
+		globalOrbitVelocity = Math.max(globalOrbitVelocity - globalOrbitVelocityStep, 0);
+	}
+	
+	if (keys["w"]) { // W: Increase the demo speed
+		globalOrbitVelocity += globalOrbitVelocityStep;
+	}
+	
+	if (keys["a"]) { // A: Globally give the planets a tighter orbit
+		globalOrbitDistance = Math.max(globalOrbitDistance - globalOrbitDistanceStep, minGlobalOrbitDistance);
+		console.log(globalOrbitDistance);
+	}
+	
+	if (keys["s"]) { // S: Globally give the planets a wider orbit
+		globalOrbitDistance += globalOrbitDistanceStep;
+		console.log(globalOrbitDistance)
+	}
+	
+	if (keys["left"]) { // Left Arrow: Zoom out
+		viewingDistance += viewingDistanceStep;
+	}
+	
+	if (keys["right"]) { // Right Arrow: Zoom in
+		viewingDistance = Math.max(viewingDistance - viewingDistanceStep, minViewingDistance);
+	}
+	
+	if (keys["up"]) { // Up Arrow: Rotate camera "upwards"
+		viewingAngle = viewingAngle >= maxViewingAngle ? viewingAngle : viewingAngle + viewingAngleStep;
+	} 
+	
+	if (keys["down"]) { // Down Arrow: Rotate camera "downwards"
+		viewingAngle = viewingAngle <= minViewingAngle ? viewingAngle : viewingAngle - viewingAngleStep;
+	}
+}
