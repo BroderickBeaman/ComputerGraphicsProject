@@ -4,22 +4,39 @@
     <meta charset="utf-8" />
     <title>Solar System</title>
   </head>
+  
+  <style>
+  
+  	canvas {
+  		float : left;
+  	}
+  	
+  	#overlay {
+  		position : absolute;
+  		left : 20px;
+  		top : 20px;
+  		color : white;
+  		font-family : monospace;
+  		text-shadow : 0px 0px 5px white;
+  	}
+  	
+  	#controls {
+  		float : left;
+  		padding-left : 10px;
+  	}
+  
+  </style>
 
   <body onload="main()">
-    <canvas id="webgl" width="800" height="800" style="float: left">
+    <canvas id="webgl" width="800" height="800">
     Please use a browser that supports "canvas"
     </canvas>
-
-    <script src="../lib/webgl-utils.js"></script>
-    <script src="../lib/webgl-debug.js"></script>
-    <script src="../lib/cuon-utils.js"></script>
-    <script src="../lib/cuon-matrix.js"></script>
-    <script src="shaders/SunVertexShader.js"></script>
-    <script src="shaders/PlanetVertexShader.js"></script>
-    <script src="shaders/SunFragmentShader.js"></script>
-    <script src="SolarSystem.js"></script>
     
-    <div style="float: left; padding-left: 10px">
+    <div id="overlay">
+   		<div>FPS: <span id="frameRate"></span></div>
+   	</div>
+   	
+    <div id="controls">
     	Controls:<br><br>
     	Q: Decrease speed<br>
     	W: Increase speed<br><br>
@@ -32,5 +49,15 @@
     	Up: Rotate camera up<br>
     	Down: Rotate camera down<br>
     </div>
+
+    <script src="../lib/webgl-utils.js"></script>
+    <script src="../lib/webgl-debug.js"></script>
+    <script src="../lib/cuon-utils.js"></script>
+    <script src="../lib/cuon-matrix.js"></script>
+    <script src="shaders/SunVertexShader.js"></script>
+    <script src="shaders/PlanetVertexShader.js"></script>
+    <script src="shaders/SunFragmentShader.js"></script>
+    <script src="SolarSystem.js"></script>
+    
   </body>
 </html>

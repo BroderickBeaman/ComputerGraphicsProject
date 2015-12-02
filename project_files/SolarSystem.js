@@ -236,7 +236,23 @@ planetOrbitDistance[5] = 9.575; // Saturn's average orbital distance (in AU)
 planetOrbitDistance[6] = 19.22; // Uranus' average orbital distance (in AU)
 planetOrbitDistance[7] = 30; // Neptune's average orbital distance (in AU)
 
+// Times for FPS calculation
+var lastTime, currentTime, fps;
+
+// HTML elements for FSP calculation
+var frameRateElement = document.getElementById("frameRate");
+var frameRateNode = document.createTextNode("");
+frameRateElement.appendChild(frameRateNode);
+
 function draw(gl, n, canvasHeight, canvasWidth, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix) {
+	
+	//Frame rate calculations
+	currentTime = new Date().getTime();
+	if (lastTime) {
+		fps = 1000/(currentTime - lastTime);
+		frameRateNode.nodeValue = fps.toFixed(2); // 2 decimal places
+	}
+	lastTime = currentTime;
 	
 	// Calculate the View Projection Matrix
 	viewProjMatrix.setPerspective(30, canvasWidth/canvasHeight, 1, 100);
@@ -343,20 +359,24 @@ function keydown(ev) {
 			console.log('Sun to planet scale = ' + sunToPlanetScale);
 			break;
 		case 37 : // Left Arrow: Zoom out
+			ev.preventDefault();
 			viewingDistance += viewingDistanceStep;
 			console.log('Viewing distance: ' + viewingDistance);
 			break;
 		case 39 : // Right Arrow: Zoom in
+			ev.preventDefault();
 			viewingDistance -= viewingDistanceStep;
 			console.log('Viewing distance: ' + viewingDistance);
 			break;
 		case 38 : // Up Arrow: Rotate camera "upwards"
+			ev.preventDefault();
 			viewingAngle = viewingAngle >= 89 ? viewingAngle : viewingAngle + viewingAngleStep;
-			console.log('Viewing angle: ' + Math.sin(viewingAngle));
+			console.log('Viewing angle: ' + viewingAngle);
 			break;
 		case 40 : // Down Arrow: Rotate camera "downwards"
+			ev.preventDefault();
 			viewingAngle = viewingAngle <= -89 ? viewingAngle : viewingAngle - viewingAngleStep;
-			console.log('Viewing angle: ' + Math.sin(viewingAngle));
+			console.log('Viewing angle: ' + viewingAngle);
 			break;
 		default : return; // No action
 	}
