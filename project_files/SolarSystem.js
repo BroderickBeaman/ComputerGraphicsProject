@@ -54,7 +54,7 @@ function main() {
 	  	}
 	  	
 	  	//Error if any of the shaders failed to initialize
-	  	if (!u_ModelMatrix[count] || !u_MvpMatrix[count] || !u_NormalMatrix[count] || !u_LightColor[count] || !u_LightPosition[count]　|| !u_AmbientLight[count]) { 
+	  	if (!u_ModelMatrix[count] || !u_MvpMatrix[count] || !u_NormalMatrix[count] || !u_LightColor[count] || !u_LightPosition[count] || !u_AmbientLight[count]) { 
 	  	    console.log('Failed to get the storage location' + count);
 	  	    return;
 	  	}
@@ -250,7 +250,7 @@ function draw(gl, n, canvasHeight, canvasWidth, u_ModelMatrix, u_MvpMatrix, u_No
 	var i = 0;
 	do{
 		planetOrbitAngle[i] = (planetOrbitAngle[i] + (planetOrbitVelocity[i] * globalOrbitVelocity)) % 360;
-	}while(++i < planetOrbitAngle.length)
+	}while(++i < planetOrbitAngle.length);
 	
 	// Clear color and depth buffer
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
