@@ -262,7 +262,7 @@ function draw(currentTime) {
 	keyEvent();
 	
 	// Calculate the View Projection Matrix
-	viewProjMatrix.setPerspective(30, canvas.width/canvas.height, 1, 100);
+	viewProjMatrix.setPerspective(30, canvas.width/canvas.height, 1, 150);
 	viewProjMatrix.lookAt(0, Math.sin(viewingAngle * Math.PI / 180) * viewingDistance, Math.cos(viewingAngle * Math.PI / 180) * viewingDistance, 0, 0, 0, 0, 1, 0);
 
 	// Recompute planetary rotation angles
