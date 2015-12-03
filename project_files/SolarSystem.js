@@ -239,6 +239,7 @@ planetOrbitDistance[7] = 30; // Neptune's average orbital distance (in AU)
 
 // Times for FPS calculation 
 var lastTime, time, fps;
+var updateFPSTime = 0;
 
 // HTML elements for FSP calculation
 var frameRateElement = document.getElementById("frameRate");
@@ -254,13 +255,17 @@ function draw(currentTime) {
 	
 	//Frame rate calculations
 	if (lastTime) {
-		currentTime = new Date().getTime();
 		time = currentTime - lastTime;
+		updateFPSTime += time;
 	} else {
 		time = 10;
 	}
 	fps = 1000/time;
-	frameRateNode.nodeValue = fps.toFixed(2); // 2 decimal places
+	
+	if (updateFPSTime >= 250) {
+		frameRateNode.nodeValue = fps.toFixed(2); // 2 decimal places
+		updateFPSTime = 0;
+	}
 	lastTime = currentTime;
 	
 	// Earth year calculation
