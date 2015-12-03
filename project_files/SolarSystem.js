@@ -1,24 +1,23 @@
-var program;
+var program, canvas, gl, n;
+var u_ModelMatrix = [];
+var u_MvpMatrix = [];
+var u_NormalMatrix = [];
+var u_LightColor = [];
+var u_LightPosition = [];
+var u_AmbientLight = [];
 
 function main() {
 	// Retrieve <canvas> element
-	var canvas = document.getElementById('webgl');
+	canvas = document.getElementById('webgl');
 
 	// Get the rendering context for WebGL
-	var gl = getWebGLContext(canvas);
+	gl = getWebGLContext(canvas);
 	if (!gl) {
 		console.log('Failed to get the rendering context for WebGL');
 		return;
 	}
 	
 	var count = 0;
-	
-	var u_ModelMatrix = [];
-  	var u_MvpMatrix = [];
-  	var u_NormalMatrix = [];
-  	var u_LightColor = [];
-  	var u_LightPosition = [];
-  	var u_AmbientLight = [];
 	
 	while( count < VSHADER_SOURCE.length)
 	{
@@ -62,17 +61,11 @@ function main() {
 	}
 	
 	// Set the vertex coordinates and the color.
-	var n = initVertexBuffers(gl);
+	n = initVertexBuffers(gl);
 	if (n < 0) {
 		console.log('Failed to set the vertex information');
 		return;
 	}
-    	
-	var viewProjMatrix = new Matrix4(); // Model View Projection Matrix
-	
-	// Calculate the View Projection Matrix
-	viewProjMatrix.setPerspective(30, canvas.width/canvas.height, 1, 100);
-	viewProjMatrix.lookAt(0, 10, 14, 0, 0, 0, 0, 1, 0);
 	
 	// Register the event handler for keystrokes
 	window.addEventListener('keydown', function(ev){
@@ -82,7 +75,7 @@ function main() {
 		keyup(ev);
 	}, true);
 	
-	draw(gl, n, canvas.height, canvas.width, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix);
+	requestAnimationFrame(draw);
 }
 
 // Code to create a sphere
@@ -203,7 +196,7 @@ var sunScale = 0.2;
 var sunToPlanetScale = 3;
 
 // Overall speed of the orbits
-var globalOrbitVelocity = 1;
+var globalOrbitVelocity = 0.6;
 var globalOrbitVelocityStep = 0.02;
 
 // Global scale of orbital distances
@@ -244,35 +237,38 @@ planetOrbitDistance[5] = 9.575; // Saturn's average orbital distance (in AU)
 planetOrbitDistance[6] = 19.22; // Uranus' average orbital distance (in AU)
 planetOrbitDistance[7] = 30; // Neptune's average orbital distance (in AU)
 
-// Times for FPS calculation
-var lastTime, currentTime, fps;
+// Times for FPS calculation 
+var lastTime, time, fps;
 
 // HTML elements for FSP calculation
 var frameRateElement = document.getElementById("frameRate");
 var frameRateNode = document.createTextNode("");
 frameRateElement.appendChild(frameRateNode);
 
-function draw(gl, n, canvasHeight, canvasWidth, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix) {
+function draw(currentTime) {
 	
 	//Frame rate calculations
-	currentTime = new Date().getTime();
 	if (lastTime) {
-		fps = 1000/(currentTime - lastTime);
-		frameRateNode.nodeValue = fps.toFixed(2); // 2 decimal places
+		currentTime = new Date().getTime();
+		time = currentTime - lastTime;
+	} else {
+		time = 10;
 	}
+	fps = 1000/time;
+	frameRateNode.nodeValue = fps.toFixed(2); // 2 decimal places
 	lastTime = currentTime;
 	
 	// Process what keys are pressed
 	keyEvent();
 	
 	// Calculate the View Projection Matrix
-	viewProjMatrix.setPerspective(30, canvasWidth/canvasHeight, 1, 100);
+	viewProjMatrix.setPerspective(30, canvas.width/canvas.height, 1, 100);
 	viewProjMatrix.lookAt(0, Math.sin(viewingAngle * Math.PI / 180) * viewingDistance, Math.cos(viewingAngle * Math.PI / 180) * viewingDistance, 0, 0, 0, 0, 1, 0);
 
 	// Recompute planetary rotation angles
 	var i = 0;
 	do{
-		planetOrbitAngle[i] = (planetOrbitAngle[i] + (planetOrbitVelocity[i] * globalOrbitVelocity)) % 360;
+		planetOrbitAngle[i] = (planetOrbitAngle[i] + (planetOrbitVelocity[i] * globalOrbitVelocity * time/10)) % 360;
 	}while(++i < planetOrbitAngle.length);
 	
 	// Clear color and depth buffer
@@ -299,10 +295,7 @@ function draw(gl, n, canvasHeight, canvasWidth, u_ModelMatrix, u_MvpMatrix, u_No
 		g_modelMatrix = popMatrix();
 	}
 	
-	// Recursive call happens every 1/60 of a second (60 fps)
-	setTimeout(function() {
-		draw(gl, n, canvasHeight, canvasWidth, u_ModelMatrix, u_MvpMatrix, u_NormalMatrix);
-	}, 1000/60);
+	requestAnimationFrame(draw);
 }
 
 var g_matrixStack = []; // Array for storing matrices
@@ -425,12 +418,10 @@ function keyEvent() {
 	
 	if (keys["a"]) { // A: Globally give the planets a tighter orbit
 		globalOrbitDistance = Math.max(globalOrbitDistance - globalOrbitDistanceStep, minGlobalOrbitDistance);
-		console.log(globalOrbitDistance);
 	}
 	
 	if (keys["s"]) { // S: Globally give the planets a wider orbit
 		globalOrbitDistance += globalOrbitDistanceStep;
-		console.log(globalOrbitDistance)
 	}
 	
 	if (keys["left"]) { // Left Arrow: Zoom out
