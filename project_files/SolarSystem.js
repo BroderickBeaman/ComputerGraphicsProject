@@ -245,6 +245,11 @@ var frameRateElement = document.getElementById("frameRate");
 var frameRateNode = document.createTextNode("");
 frameRateElement.appendChild(frameRateNode);
 
+// HTML elements for earth year calculation
+var earthYearElement = document.getElementById("earthYear");
+var earthYearNode = document.createTextNode("");
+earthYearElement.appendChild(earthYearNode);
+
 function draw(currentTime) {
 	
 	//Frame rate calculations
@@ -257,6 +262,10 @@ function draw(currentTime) {
 	fps = 1000/time;
 	frameRateNode.nodeValue = fps.toFixed(2); // 2 decimal places
 	lastTime = currentTime;
+	
+	// Earth year calculation
+	var earthYearInSeconds = 6 / (globalOrbitVelocity / 0.6);
+	earthYearNode.nodeValue = earthYearInSeconds.toFixed(2);
 	
 	// Process what keys are pressed
 	keyEvent();
