@@ -342,7 +342,7 @@ function draw(currentTime) {
 			gl.useProgram(program[9]);
 			gl.program = program[9];
 			pushMatrix(g_modelMatrix);
-			g_modelMatrix.rotate(planetOrbitAngle[8], -0.3, 1, 0.4);
+			g_modelMatrix.rotate(planetOrbitAngle[8], 0.3, 1, -0.2);
 			g_modelMatrix.translate(planetOrbitDistance[8] * moonOrbitDistance, 0, 0);
 			drawSphere(gl, n, moonScale, viewProjMatrix, u_ModelMatrix[9], u_MvpMatrix[9], u_NormalMatrix[9]);
 			lightLocation[0] = g_modelMatrix.elements[12];
