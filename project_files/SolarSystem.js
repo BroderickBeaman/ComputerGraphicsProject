@@ -352,7 +352,7 @@ function draw(currentTime) {
 			gl.useProgram(program[i]);
 			gl.program = program[i];
 			g_modelMatrix = popMatrix();
-			gl.uniform3f(u_EarthLightColor[0], 0.8, 0.9, 0.7);
+			gl.uniform3f(u_EarthLightColor[0], 0.72, 0.81, 0.63);
 			gl.uniform3f(u_EarthLightPosition[0], lightLocation[0], lightLocation[1], lightLocation[2]);
 			gl.uniform3f(u_EarthLightColor[1], 0.8, 0.9, 0.7);
 			gl.uniform3f(u_EarthLightPosition[1], 0.0, 0.0, 0.0);
