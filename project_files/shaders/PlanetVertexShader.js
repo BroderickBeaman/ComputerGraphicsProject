@@ -46,7 +46,7 @@ VSHADER_SOURCE[3] = // Earth
 	'varying vec3 v_Position;\n' +
 	'void main() {\n' +
 	'  vec4 color = vec4(0.2, 0.21, 0.60, 1.0);\n' +  // Sphere Color
-	'  gl_Position = u_MvpMatrix * a_Position;\n' +
+	'  gl_Position = u_MvpMatrix * a_Positionasaqqsa;\n' +
 	   // Calculate the vertex position in the world coordinate
 	'  v_Position = vec3(u_ModelMatrix * a_Position);\n' +
 	'  v_Normal = normalize(vec3(u_NormalMatrix * a_Normal));\n' +

@@ -4,6 +4,8 @@ var u_MvpMatrix = [];
 var u_NormalMatrix = [];
 var u_LightColor = [];
 var u_LightPosition = [];
+var u_EarthLightColor = [];
+var u_EarthLightPosition = [];
 var u_AmbientLight = [];
 
 function main() {
@@ -32,28 +34,42 @@ function main() {
 		u_ModelMatrix[count] = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
 	  	u_MvpMatrix[count] = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
 	  	u_NormalMatrix[count] = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
-	  	u_LightColor[count] = gl.getUniformLocation(gl.program, 'u_LightColor');
-	  	u_LightPosition[count] = gl.getUniformLocation(gl.program, 'u_LightPosition');
 	  	u_AmbientLight[count] = gl.getUniformLocation(gl.program, 'u_AmbientLight');
-
-	  	if(count){
+	  	
+	  	if(count == 3){
+		  	u_EarthLightColor[0] = gl.getUniformLocation(gl.program, 'u_LightColor[0]');
+		  	u_EarthLightPosition[0] = gl.getUniformLocation(gl.program, 'u_LightPosition[0]');
+		  	u_EarthLightColor[1] = gl.getUniformLocation(gl.program, 'u_LightColor[1]');
+		  	u_EarthLightPosition[1] = gl.getUniformLocation(gl.program, 'u_LightPosition[1]');
+	  	}else {
+		  	u_LightColor[count] = gl.getUniformLocation(gl.program, 'u_LightColor');
+		  	u_LightPosition[count] = gl.getUniformLocation(gl.program, 'u_LightPosition');
+	  	}
+	  	
+	  	if(!count){
+		   	// Set the light color (white)
+			gl.uniform3f(u_LightColor[count], 1.0, 0.5, 0.0);
+			// Set the light direction (in the world coordinate)
+			gl.uniform3f(u_LightPosition[count], 0.0, 0.8, 0.8);
+			// Set the ambient light
+			gl.uniform3f(u_AmbientLight[count], 1.0, 0.5, 0.0);
+	  	}else if (count == 3){
+			gl.uniform3f(u_EarthLightColor[0], 0.5, 0.8, 0.95);
+			gl.uniform3f(u_EarthLightPosition[0], 0.0, 0.0, 0.0);
+			gl.uniform3f(u_EarthLightColor[1], 0.8, 0.8, 0.8);
+			gl.uniform3f(u_EarthLightPosition[1], 0.0, 0.0, 0.0);
+			gl.uniform3f(u_AmbientLight[count], 0.2, 0.2, 0.2);
+	  	}else{
 		   	// Set the light color (white)
 			gl.uniform3f(u_LightColor[count], 0.8, 0.8, 0.8);
 			// Set the light direction (in the world coordinate)
 			gl.uniform3f(u_LightPosition[count], 0.0, 0.0, 0.0);
 			// Set the ambient light
 			gl.uniform3f(u_AmbientLight[count], 0.2, 0.2, 0.2);
-	  	}else{
-		   	// Set the light color (white)
-			gl.uniform3f(u_LightColor[count], 1.0, 0.5, 0);
-			// Set the light direction (in the world coordinate)
-			gl.uniform3f(u_LightPosition[count], 0, 0.8, 0.8);
-			// Set the ambient light
-			gl.uniform3f(u_AmbientLight[count], 1.0, 0.5, 0);
 	  	}
 	  	
 	  	//Error if any of the shaders failed to initialize
-	  	if (!u_ModelMatrix[count] || !u_MvpMatrix[count] || !u_NormalMatrix[count] || !u_LightColor[count] || !u_LightPosition[count] || !u_AmbientLight[count]) { 
+	  	if ((!u_ModelMatrix[count] || !u_MvpMatrix[count] || !u_NormalMatrix[count] || !u_LightColor[count] || !u_LightPosition[count] || !u_AmbientLight[count]) && count != 3) { 
 	  	    console.log('Failed to get the storage location' + count);
 	  	    return;
 	  	}
@@ -202,7 +218,7 @@ var sunToPlanetScale = 3;
 var globalOrbitVelocity = 0.6;
 var globalOrbitVelocityStep = 0.02;
 
-// Global scale of orbital distances
+// Global scale of shaderProgram.lightingDirectionUniformorbital distances
 var globalOrbitDistance = 5;
 var globalOrbitDistanceStep = 0.1;
 var minGlobalOrbitDistance = 0.8;
@@ -301,7 +317,8 @@ function draw(currentTime) {
 	g_modelMatrix.setIdentity();
 	
 	i = 0;
-	
+	var lightLocation = [];
+
 	// Draw the sun
 	gl.useProgram(program[i]);
 	gl.program = program[i];
@@ -316,21 +333,31 @@ function draw(currentTime) {
 		pushMatrix(g_modelMatrix);
 		g_modelMatrix.rotate(planetOrbitAngle[i-1], 0, 1, 0);
 		g_modelMatrix.translate(planetOrbitDistance[i-1] * globalOrbitDistance, 0, 0);
-		drawSphere(gl, n, sunScale/sunToPlanetScale, viewProjMatrix, u_ModelMatrix[i], u_MvpMatrix[i], u_NormalMatrix[i]);
-		
-		if(i == 3){
+	
+		if(i === 3){
 			gl.useProgram(program[9]);
 			gl.program = program[9];
 			pushMatrix(g_modelMatrix);
 			g_modelMatrix.rotate(planetOrbitAngle[8], 0, 1, 0);
 			g_modelMatrix.translate(planetOrbitDistance[8] * moonOrbitDistance, 0, 0);
 			drawSphere(gl, n, moonScale, viewProjMatrix, u_ModelMatrix[9], u_MvpMatrix[9], u_NormalMatrix[9]);
+			lightLocation[0] = g_modelMatrix.elements[12];
+			lightLocation[1] = g_modelMatrix.elements[13];
+			lightLocation[2] = g_modelMatrix.elements[14];
 			g_modelMatrix = popMatrix();
+			
+			gl.useProgram(program[i]);
+			gl.program = program[i];
+			gl.uniform3f(u_EarthLightColor[1], 0.5, 0.5, 1.0);
+			gl.uniform3f(u_EarthLightPosition[1], lightLocation[0], lightLocation[1], lightLocation[2]);
+			
 		}
+
 		
 		gl.useProgram(program[i]);
 		gl.program = program[i];
-		
+
+		drawSphere(gl, n, sunScale/sunToPlanetScale, viewProjMatrix, u_ModelMatrix[i], u_MvpMatrix[i], u_NormalMatrix[i]);		
 		g_modelMatrix = popMatrix();
 	}
 	
