@@ -234,7 +234,7 @@ planetOrbitVelocity[4] = 0.084; // Jupiter's actual orbital velocity (relative t
 planetOrbitVelocity[5] = 0.04; // Saturns actual orbital velocity (relative to Earth)
 planetOrbitVelocity[6] = 0.012; // Uranus' actual orbital velocity (relative to Earth)
 planetOrbitVelocity[7] = 0.006; // Neptune's actual orbital velocity (relative to Earth)
-planetOrbitVelocity[8] = 0.034; // Moon's actual orbital velocity (relative to Earth)
+planetOrbitVelocity[8] = 13.37; // Moon's actual orbital velocity (relative to Earth)
 
 var planetOrbitDistance = [];
 // Planetary orbit distances
