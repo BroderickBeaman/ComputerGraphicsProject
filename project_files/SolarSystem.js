@@ -56,12 +56,12 @@ function main() {
 	  	}else if (count === 3){
 			gl.uniform3f(u_EarthLightColor[0], 0.5, 0.8, 0.95);
 			gl.uniform3f(u_EarthLightPosition[0], 0.0, 0.0, 0.0);
-			gl.uniform3f(u_EarthLightColor[1], 0.8, 0.9, 0.7);
+			gl.uniform3f(u_EarthLightColor[1], 2.2, 2.4, 2.0);
 			gl.uniform3f(u_EarthLightPosition[1], 0.0, 0.0, 0.0);
 			gl.uniform3f(u_AmbientLight[count], 0.15, 0.15, 0.15);
 	  	}else{
 		   	// Set the light color (white)
-			gl.uniform3f(u_LightColor[count], 0.8, 0.9, 0.7);
+			gl.uniform3f(u_LightColor[count], 2.2, 2.4, 2.0);
 			// Set the light direction (in the world coordinate)
 			gl.uniform3f(u_LightPosition[count], 0.0, 0.0, 0.0);
 			// Set the ambient light
@@ -395,7 +395,7 @@ function draw(currentTime) {
 			g_modelMatrix = popMatrix();
 			gl.uniform3f(u_EarthLightColor[0], 0.72, 0.81, 0.63);
 			gl.uniform3f(u_EarthLightPosition[0], lightLocation[0], lightLocation[1], lightLocation[2]);
-			gl.uniform3f(u_EarthLightColor[1], 0.8, 0.9, 0.7);
+			gl.uniform3f(u_EarthLightColor[1], 2.2, 2.4, 2.0);
 			gl.uniform3f(u_EarthLightPosition[1], 0.0, 0.0, 0.0);
 		}
 		
@@ -438,7 +438,7 @@ function drawSphere(gl, n, scale, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_
 	g_normalMatrix.transpose();
 	gl.uniformMatrix4fv(u_NormalMatrix, false, g_normalMatrix.elements);
 	
-	// Draw
+	// Drawh
 	gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_SHORT, 0);
 	
 	g_modelMatrix = popMatrix();  // Retrieve the old model matrix
