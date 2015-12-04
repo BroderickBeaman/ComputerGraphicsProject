@@ -58,14 +58,14 @@ function main() {
 			gl.uniform3f(u_EarthLightPosition[0], 0.0, 0.0, 0.0);
 			gl.uniform3f(u_EarthLightColor[1], 0.8, 0.9, 0.7);
 			gl.uniform3f(u_EarthLightPosition[1], 0.0, 0.0, 0.0);
-			gl.uniform3f(u_AmbientLight[count], 0.2, 0.2, 0.2);
+			gl.uniform3f(u_AmbientLight[count], 0.15, 0.15, 0.15);
 	  	}else{
 		   	// Set the light color (white)
 			gl.uniform3f(u_LightColor[count], 0.8, 0.9, 0.7);
 			// Set the light direction (in the world coordinate)
 			gl.uniform3f(u_LightPosition[count], 0.0, 0.0, 0.0);
 			// Set the ambient light
-			gl.uniform3f(u_AmbientLight[count], 0.2, 0.2, 0.2);
+			gl.uniform3f(u_AmbientLight[count], 0.15, 0.15, 0.15);
 	  	}
 	  	
 	  	//Error if any of the shaders failed to initialize
