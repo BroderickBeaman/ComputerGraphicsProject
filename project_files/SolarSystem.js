@@ -53,7 +53,7 @@ function main() {
 			gl.uniform3f(u_LightPosition[count], 0.0, 0.8, 0.8);
 			// Set the ambient light
 			gl.uniform3f(u_AmbientLight[count], 1.0, 0.5, 0.0);
-	  	}else if (count == 3){
+	  	}else if (count === 3){
 			gl.uniform3f(u_EarthLightColor[0], 0.5, 0.8, 0.95);
 			gl.uniform3f(u_EarthLightPosition[0], 0.0, 0.0, 0.0);
 			gl.uniform3f(u_EarthLightColor[1], 0.8, 0.8, 0.8);
@@ -69,8 +69,11 @@ function main() {
 	  	}
 	  	
 	  	//Error if any of the shaders failed to initialize
-	  	if ((!u_ModelMatrix[count] || !u_MvpMatrix[count] || !u_NormalMatrix[count] || !u_LightColor[count] || !u_LightPosition[count] || !u_AmbientLight[count]) && count != 3) { 
+	  	if (count != 3 && (!u_ModelMatrix[count] || !u_MvpMatrix[count] || !u_NormalMatrix[count] || !u_LightColor[count] || !u_LightPosition[count] || !u_AmbientLight[count])) { 
 	  	    console.log('Failed to get the storage location' + count);
+	  	    return;
+	  	}else if( count === 3 && (!u_EarthLightColor[0] || !u_EarthLightColor[1] || !u_EarthLightPosition[0] || !u_EarthLightPosition[1] || !u_ModelMatrix[count] || !u_MvpMatrix[count] || !u_NormalMatrix[count] || !u_AmbientLight[count])) {
+	  		console.log('Failed to get the storage location' + count);
 	  	    return;
 	  	}
 	  	
@@ -339,7 +342,7 @@ function draw(currentTime) {
 			gl.useProgram(program[9]);
 			gl.program = program[9];
 			pushMatrix(g_modelMatrix);
-			g_modelMatrix.rotate(planetOrbitAngle[8], 0, 1, 0);
+			g_modelMatrix.rotate(planetOrbitAngle[8], -0.3, 1, 0.4);
 			g_modelMatrix.translate(planetOrbitDistance[8] * moonOrbitDistance, 0, 0);
 			drawSphere(gl, n, moonScale, viewProjMatrix, u_ModelMatrix[9], u_MvpMatrix[9], u_NormalMatrix[9]);
 			lightLocation[0] = g_modelMatrix.elements[12];
@@ -351,6 +354,8 @@ function draw(currentTime) {
 			g_modelMatrix = popMatrix();
 			gl.uniform3f(u_EarthLightColor[0], 0.5, 0.5, 1.0);
 			gl.uniform3f(u_EarthLightPosition[0], lightLocation[0], lightLocation[1], lightLocation[2]);
+			gl.uniform3f(u_EarthLightColor[1], 0.8, 0.8, 0.8);
+			gl.uniform3f(u_EarthLightPosition[1], 0.0, 0.0, 0.0);
 		}
 		
 		gl.useProgram(program[i]);

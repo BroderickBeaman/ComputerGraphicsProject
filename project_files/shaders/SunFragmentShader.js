@@ -83,10 +83,11 @@ FSHADER_SOURCE[3] =
 	'void main() {\n' +
 	   // Normalize the normal because it is interpolated and not 1.0 in length any more
 	'  vec3 normal = normalize(v_Normal);\n' +
-	'  vec3 diffuse;\n' +
+	'  vec3 diffuse = vec3(0.0, 0.0, 0.0);\n' +
+	'  vec3 lightDirection;\n' +
 	'  for( int i = 0; i < 2; i++){\n' +
 	    // Calculate the light direction and make it 1.0 in length
-		'  vec3 lightDirection = normalize(u_LightPosition[i] - v_Position);\n' +
+		'  lightDirection = normalize(u_LightPosition[i] - v_Position);\n' +
 	    // The dot product of the light direction and the normal
 		'  diffuse += max(dot(lightDirection, normal), 0.0) * u_LightColor[i];\n' +
 		// Calculate the final color from diffuse reflection and ambient reflection
