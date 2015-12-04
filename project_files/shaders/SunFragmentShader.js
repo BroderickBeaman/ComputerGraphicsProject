@@ -93,7 +93,7 @@ FSHADER_SOURCE[3] =
 		// Calculate the final color from diffuse reflection and ambient reflection
 	'  }\n' +
 	'  vec3 ambient = u_AmbientLight * v_Color.rgb;\n' +
-	'  gl_FragColor = vec4(diffuse + ambient * v_Color.rgb, v_Color.a);\n' +
+	'  gl_FragColor = vec4((diffuse + ambient) * v_Color.rgb, v_Color.a);\n' +
 	'}\n';
 
 FSHADER_SOURCE[4] = 
