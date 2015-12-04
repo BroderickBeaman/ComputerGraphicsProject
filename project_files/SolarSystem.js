@@ -32,41 +32,37 @@ function main() {
 	  	
 		// Get the storage locations of uniform variables
 		u_ModelMatrix[count] = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
-	  	u_MvpMatrix[count] = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
-	  	u_NormalMatrix[count] = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
-	  	u_AmbientLight[count] = gl.getUniformLocation(gl.program, 'u_AmbientLight');
-	  	
-	  	if(count == 3){
-		  	u_EarthLightColor[0] = gl.getUniformLocation(gl.program, 'u_LightColor[0]');
-		  	u_EarthLightPosition[0] = gl.getUniformLocation(gl.program, 'u_LightPosition[0]');
-		  	u_EarthLightColor[1] = gl.getUniformLocation(gl.program, 'u_LightColor[1]');
-		  	u_EarthLightPosition[1] = gl.getUniformLocation(gl.program, 'u_LightPosition[1]');
-	  	}else {
-		  	u_LightColor[count] = gl.getUniformLocation(gl.program, 'u_LightColor');
-		  	u_LightPosition[count] = gl.getUniformLocation(gl.program, 'u_LightPosition');
-	  	}
-	  	
-	  	if(!count){
-		   	// Set the light color (white)
+		u_MvpMatrix[count] = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
+		u_NormalMatrix[count] = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
+		u_AmbientLight[count] = gl.getUniformLocation(gl.program, 'u_AmbientLight');
+
+		if(count == 3){
+			u_EarthLightColor[0] = gl.getUniformLocation(gl.program, 'u_LightColor[0]');
+			u_EarthLightPosition[0] = gl.getUniformLocation(gl.program, 'u_LightPosition[0]');
+			u_EarthLightColor[1] = gl.getUniformLocation(gl.program, 'u_LightColor[1]');
+			u_EarthLightPosition[1] = gl.getUniformLocation(gl.program, 'u_LightPosition[1]');
+			gl.uniform3f(u_EarthLightColor[1], 2.2, 2.4, 2.0);
+			gl.uniform3f(u_EarthLightPosition[1], 0.0, 0.0, 0.0);
+		}else {
+			u_LightColor[count] = gl.getUniformLocation(gl.program, 'u_LightColor');
+			u_LightPosition[count] = gl.getUniformLocation(gl.program, 'u_LightPosition');
+		}
+
+		if(!count){
+		 	// Set the light color (white)
 			gl.uniform3f(u_LightColor[count], 1.0, 0.5, 0.0);
 			// Set the light direction (in the world coordinate)
 			gl.uniform3f(u_LightPosition[count], 0.0, 0.8, 0.8);
 			// Set the ambient light
 			gl.uniform3f(u_AmbientLight[count], 1.0, 0.5, 0.0);
-	  	}else if (count === 3){
-			gl.uniform3f(u_EarthLightColor[0], 0.5, 0.8, 0.95);
-			gl.uniform3f(u_EarthLightPosition[0], 0.0, 0.0, 0.0);
-			gl.uniform3f(u_EarthLightColor[1], 2.2, 2.4, 2.0);
-			gl.uniform3f(u_EarthLightPosition[1], 0.0, 0.0, 0.0);
-			gl.uniform3f(u_AmbientLight[count], 0.15, 0.15, 0.15);
-	  	}else{
-		   	// Set the light color (white)
+		}else{
+		 	// Set the light color (white)
 			gl.uniform3f(u_LightColor[count], 2.2, 2.4, 2.0);
 			// Set the light direction (in the world coordinate)
 			gl.uniform3f(u_LightPosition[count], 0.0, 0.0, 0.0);
 			// Set the ambient light
 			gl.uniform3f(u_AmbientLight[count], 0.15, 0.15, 0.15);
-	  	}
+		}
 	  	
 	  	//Error if any of the shaders failed to initialize
 	  	if (count != 3 && (!u_ModelMatrix[count] || !u_MvpMatrix[count] || !u_NormalMatrix[count] || !u_LightColor[count] || !u_LightPosition[count] || !u_AmbientLight[count])) { 
@@ -82,6 +78,7 @@ function main() {
 	
 	// Set the vertex coordinates and the color.
 	n = initVertexBuffers(gl);
+
 	if (n < 0) {
 		console.log('Failed to set the vertex information');
 		return;
@@ -362,7 +359,10 @@ function draw(currentTime) {
 	g_modelMatrix.setIdentity();
 	
 	i = 0;
+	var lightIntensity = [1.32, 1.44, 1.2];
 	var lightLocation = [];
+	var factor = 0;
+	var shadowFactor = 0;
 
 	// Draw the sun
 	gl.useProgram(program[i]);
@@ -380,6 +380,7 @@ function draw(currentTime) {
 		g_modelMatrix.translate(planetOrbitDistance[i-1] * globalOrbitDistance, 0, 0);
 	
 		if(i === 3){
+
 			gl.useProgram(program[9]);
 			gl.program = program[9];
 			pushMatrix(g_modelMatrix);
@@ -389,14 +390,18 @@ function draw(currentTime) {
 			lightLocation[0] = g_modelMatrix.elements[12];
 			lightLocation[1] = g_modelMatrix.elements[13];
 			lightLocation[2] = g_modelMatrix.elements[14];
-			
 			gl.useProgram(program[i]);
 			gl.program = program[i];
 			g_modelMatrix = popMatrix();
-			gl.uniform3f(u_EarthLightColor[0], 0.72, 0.81, 0.63);
+
+			factor = 4*Math.min(Math.abs(180-planetOrbitAngle[8])/180, 1-Math.abs(180-planetOrbitAngle[8])/180);
+			shadowFactor = (5+Math.log(Math.abs(180-planetOrbitAngle[8])/180));
+
+			console.log(shadowFactor + ' ' + planetOrbitAngle[8] + ' ' + factor);
+
+			gl.uniform3f(u_EarthLightColor[0], lightIntensity[0]*factor, lightIntensity[1]*factor, lightIntensity[2]*factor);
+			gl.uniform3f(u_EarthLightColor[1], lightIntensity[0]*shadowFactor, lightIntensity[1]*shadowFactor, lightIntensity[2]*shadowFactor);
 			gl.uniform3f(u_EarthLightPosition[0], lightLocation[0], lightLocation[1], lightLocation[2]);
-			gl.uniform3f(u_EarthLightColor[1], 2.2, 2.4, 2.0);
-			gl.uniform3f(u_EarthLightPosition[1], 0.0, 0.0, 0.0);
 		}
 		
 		gl.useProgram(program[i]);
@@ -406,6 +411,9 @@ function draw(currentTime) {
 		g_modelMatrix = popMatrix();
 	}
 	
+//	if(currentTime - time > 1000)
+//		throw new Error("Something went badly wrong!");
+
 	requestAnimationFrame(draw);
 }
 
