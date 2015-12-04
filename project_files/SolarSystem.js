@@ -73,6 +73,7 @@ function main() {
 	  	    console.log('Failed to get the storage location' + count);
 	  	    return;
 	  	}
+	  	
 	  	count++;
 	}
 	
@@ -322,7 +323,7 @@ function draw(currentTime) {
 	// Draw the sun
 	gl.useProgram(program[i]);
 	gl.program = program[i];
-	drawSphere(gl, n, sunScale, viewProjMatrix, u_ModelMatrix[i],  u_MvpMatrix[i], u_NormalMatrix[i], i);
+	drawSphere(gl, n, sunScale, viewProjMatrix, u_ModelMatrix[i],  u_MvpMatrix[i], u_NormalMatrix[i]);
 	
 	while(++i < program.length-1){
 
@@ -344,15 +345,13 @@ function draw(currentTime) {
 			lightLocation[0] = g_modelMatrix.elements[12];
 			lightLocation[1] = g_modelMatrix.elements[13];
 			lightLocation[2] = g_modelMatrix.elements[14];
-			g_modelMatrix = popMatrix();
 			
 			gl.useProgram(program[i]);
 			gl.program = program[i];
-			gl.uniform3f(u_EarthLightColor[1], 0.5, 0.5, 1.0);
-			gl.uniform3f(u_EarthLightPosition[1], lightLocation[0], lightLocation[1], lightLocation[2]);
-			
+			g_modelMatrix = popMatrix();
+			gl.uniform3f(u_EarthLightColor[0], 0.5, 0.5, 1.0);
+			gl.uniform3f(u_EarthLightPosition[0], lightLocation[0], lightLocation[1], lightLocation[2]);
 		}
-
 		
 		gl.useProgram(program[i]);
 		gl.program = program[i];
