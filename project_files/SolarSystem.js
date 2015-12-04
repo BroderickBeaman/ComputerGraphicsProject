@@ -192,6 +192,9 @@ var g_modelMatrix = new Matrix4(), g_mvpMatrix = new Matrix4();
 // Relative scale of the sun
 var sunScale = 0.2;
 
+// Relative scale of the moon
+var moonScale = 0.02;
+
 // How large is the sun vs the planets (globally)
 var sunToPlanetScale = 3;
 
@@ -200,9 +203,14 @@ var globalOrbitVelocity = 0.6;
 var globalOrbitVelocityStep = 0.02;
 
 // Global scale of orbital distances
-var globalOrbitDistance = 3;
+var globalOrbitDistance = 5;
 var globalOrbitDistanceStep = 0.1;
 var minGlobalOrbitDistance = 0.8;
+
+// Moons orbit steps
+var moonOrbitDistance = 5;
+var moonOrbitDistanceStep = 0.05;
+var minMoonOrbitDistance = 3.6;
 
 var planetOrbitAngle = [];
 // Angles of rotation around the sun
@@ -214,6 +222,7 @@ planetOrbitAngle[4] = 0;
 planetOrbitAngle[5] = 0;
 planetOrbitAngle[6] = 0;
 planetOrbitAngle[7] = 0;
+planetOrbitAngle[8] = 0;
 
 var planetOrbitVelocity = [];
 // Planetary orbit velocities
@@ -225,6 +234,7 @@ planetOrbitVelocity[4] = 0.084; // Jupiter's actual orbital velocity (relative t
 planetOrbitVelocity[5] = 0.04; // Saturns actual orbital velocity (relative to Earth)
 planetOrbitVelocity[6] = 0.012; // Uranus' actual orbital velocity (relative to Earth)
 planetOrbitVelocity[7] = 0.006; // Neptune's actual orbital velocity (relative to Earth)
+planetOrbitVelocity[8] = 13.37; // Moon's actual orbital velocity (relative to Earth)
 
 var planetOrbitDistance = [];
 // Planetary orbit distances
@@ -236,6 +246,7 @@ planetOrbitDistance[4] = 5.075; // Jupiter's average orbital distance (in AU)
 planetOrbitDistance[5] = 9.575; // Saturn's average orbital distance (in AU)
 planetOrbitDistance[6] = 19.22; // Uranus' average orbital distance (in AU)
 planetOrbitDistance[7] = 30; // Neptune's average orbital distance (in AU)
+planetOrbitDistance[8] = 0.025; // Moon's average orbital distance (in AU)
 
 // Times for FPS calculation 
 var lastTime, time, fps;
@@ -294,9 +305,9 @@ function draw(currentTime) {
 	// Draw the sun
 	gl.useProgram(program[i]);
 	gl.program = program[i];
-	drawSphere(gl, n, sunScale, viewProjMatrix, u_ModelMatrix[i],  u_MvpMatrix[i], u_NormalMatrix[i]);
+	drawSphere(gl, n, sunScale, viewProjMatrix, u_ModelMatrix[i],  u_MvpMatrix[i], u_NormalMatrix[i], i);
 	
-	while(++i < program.length){
+	while(++i < program.length-1){
 
 		gl.useProgram(program[i]);
 		gl.program = program[i];
@@ -306,6 +317,20 @@ function draw(currentTime) {
 		g_modelMatrix.rotate(planetOrbitAngle[i-1], 0, 1, 0);
 		g_modelMatrix.translate(planetOrbitDistance[i-1] * globalOrbitDistance, 0, 0);
 		drawSphere(gl, n, sunScale/sunToPlanetScale, viewProjMatrix, u_ModelMatrix[i], u_MvpMatrix[i], u_NormalMatrix[i]);
+		
+		if(i == 3){
+			gl.useProgram(program[9]);
+			gl.program = program[9];
+			pushMatrix(g_modelMatrix);
+			g_modelMatrix.rotate(planetOrbitAngle[8], 0, 1, 0);
+			g_modelMatrix.translate(planetOrbitDistance[8] * moonOrbitDistance, 0, 0);
+			drawSphere(gl, n, moonScale, viewProjMatrix, u_ModelMatrix[9], u_MvpMatrix[9], u_NormalMatrix[9]);
+			g_modelMatrix = popMatrix();
+		}
+		
+		gl.useProgram(program[i]);
+		gl.program = program[i];
+		
 		g_modelMatrix = popMatrix();
 	}
 	
@@ -343,6 +368,7 @@ function drawSphere(gl, n, scale, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_
 	
 	// Draw
 	gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_SHORT, 0);
+	
 	g_modelMatrix = popMatrix();  // Retrieve the old model matrix
 }
 
@@ -432,10 +458,12 @@ function keyEvent() {
 	
 	if (keys["a"]) { // A: Globally give the planets a tighter orbit
 		globalOrbitDistance = Math.max(globalOrbitDistance - globalOrbitDistanceStep, minGlobalOrbitDistance);
+		moonOrbitDistance = Math.max(moonOrbitDistance - moonOrbitDistanceStep, minMoonOrbitDistance);
 	}
 	
 	if (keys["s"]) { // S: Globally give the planets a wider orbit
 		globalOrbitDistance += globalOrbitDistanceStep;
+		moonOrbitDistance += moonOrbitDistanceStep;
 	}
 	
 	if (keys["left"]) { // Left Arrow: Zoom out
