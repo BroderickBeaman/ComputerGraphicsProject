@@ -345,6 +345,10 @@ function draw(currentTime) {
 			pushMatrix(g_modelMatrix);
 			g_modelMatrix.rotate(planetOrbitAngle[8], 0.3, 1, -0.2);
 			g_modelMatrix.translate(planetOrbitDistance[8] * moonOrbitDistance, 0, 0);
+
+			factor = Math.min(1, 6*(1-Math.abs(180-planetOrbitAngle[8])/180));
+			
+			gl.uniform3f(u_LightColor[9], lightIntensity[0]*factor, lightIntensity[1]*factor, lightIntensity[2]*factor);
 			drawSphere(gl, n, moonScale, viewProjMatrix, u_ModelMatrix[9], u_MvpMatrix[9], u_NormalMatrix[9]);
 			lightLocation[0] = g_modelMatrix.elements[12];
 			lightLocation[1] = g_modelMatrix.elements[13];
@@ -354,9 +358,6 @@ function draw(currentTime) {
 			g_modelMatrix = popMatrix();
 
 			factor = 4*Math.min(Math.abs(180-planetOrbitAngle[8])/180, 1-Math.abs(180-planetOrbitAngle[8])/180);
-			shadowFactor = (5+Math.log(Math.abs(180-planetOrbitAngle[8])/180));
-
-			console.log(shadowFactor + ' ' + planetOrbitAngle[8] + ' ' + factor);
 
 			gl.uniform3f(u_EarthLightColor[0], lightIntensity[0]*factor, lightIntensity[1]*factor, lightIntensity[2]*factor);
 			gl.uniform3f(u_EarthLightColor[1], lightIntensity[0]*shadowFactor, lightIntensity[1]*shadowFactor, lightIntensity[2]*shadowFactor);
