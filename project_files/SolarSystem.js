@@ -277,10 +277,31 @@ var frameRateElement = document.getElementById("frameRate");
 var frameRateNode = document.createTextNode("");
 frameRateElement.appendChild(frameRateNode);
 
-// HTML elements for earth year calculation
+// HTML elements for year calculation
+var mercuryYearElement = document.getElementById("mercuryYear");
+var mercuryYearNode = document.createTextNode("");
+mercuryYearElement.appendChild(mercuryYearNode);
+var venusYearElement = document.getElementById("venusYear");
+var venusYearNode = document.createTextNode("");
+venusYearElement.appendChild(venusYearNode);
 var earthYearElement = document.getElementById("earthYear");
 var earthYearNode = document.createTextNode("");
 earthYearElement.appendChild(earthYearNode);
+var marsYearElement = document.getElementById("marsYear");
+var marsYearNode = document.createTextNode("");
+marsYearElement.appendChild(marsYearNode);
+var jupiterYearElement = document.getElementById("jupiterYear");
+var jupiterYearNode = document.createTextNode("");
+jupiterYearElement.appendChild(jupiterYearNode);
+var saturnYearElement = document.getElementById("saturnYear");
+var saturnYearNode = document.createTextNode("");
+saturnYearElement.appendChild(saturnYearNode);
+var uranusYearElement = document.getElementById("uranusYear");
+var uranusYearNode = document.createTextNode("");
+uranusYearElement.appendChild(uranusYearNode);
+var neptuneYearElement = document.getElementById("neptuneYear");
+var neptuneYearNode = document.createTextNode("");
+neptuneYearElement.appendChild(neptuneYearNode);
 
 function draw(currentTime) {
 	
@@ -302,6 +323,20 @@ function draw(currentTime) {
 	// Earth year calculation
 	var earthYearInSeconds = 6 / (globalOrbitVelocity / 0.6);
 	earthYearNode.nodeValue = earthYearInSeconds.toFixed(2);
+	var mercuryYearInSeconds = earthYearInSeconds / planetOrbitVelocity[0];
+	mercuryYearNode.nodeValue = mercuryYearInSeconds.toFixed(2);
+	var venusYearInSeconds = earthYearInSeconds / planetOrbitVelocity[1];
+	venusYearNode.nodeValue = venusYearInSeconds.toFixed(2);
+	var marsYearInSeconds = earthYearInSeconds / planetOrbitVelocity[3];
+	marsYearNode.nodeValue = marsYearInSeconds.toFixed(2);
+	var jupiterYearInSeconds = earthYearInSeconds / planetOrbitVelocity[4];
+	jupiterYearNode.nodeValue = jupiterYearInSeconds.toFixed(2);
+	var saturnYearInSeconds = earthYearInSeconds / planetOrbitVelocity[5];
+	saturnYearNode.nodeValue = saturnYearInSeconds.toFixed(2);
+	var uranusYearInSeconds = earthYearInSeconds / planetOrbitVelocity[6];
+	uranusYearNode.nodeValue = uranusYearInSeconds.toFixed(2);
+	var neptuneYearInSeconds = earthYearInSeconds / planetOrbitVelocity[7];
+	neptuneYearNode.nodeValue = neptuneYearInSeconds.toFixed(2);
 	
 	// Process what keys are pressed
 	keyEvent();
