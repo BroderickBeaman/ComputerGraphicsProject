@@ -219,7 +219,8 @@ var moonScale = 0.02;
 var sunToPlanetScale = 3;
 
 // Overall speed of the orbits
-var globalOrbitVelocity = 0.6;
+//var globalOrbitVelocity = 0.6;
+var globalOrbitVelocity = 0.01;
 var globalOrbitVelocityStep = 0.02;
 
 // Global scale of shaderProgram.lightingDirectionUniformorbital distances
@@ -303,6 +304,7 @@ var neptuneYearElement = document.getElementById("neptuneYear");
 var neptuneYearNode = document.createTextNode("");
 neptuneYearElement.appendChild(neptuneYearNode);
 
+alert(getPlanetsWorldPosition(2));
 function draw(currentTime) {
 	
 	//Frame rate calculations
@@ -341,10 +343,15 @@ function draw(currentTime) {
 	// Process what keys are pressed
 	keyEvent();
 	
+	// Compute Earth's Location
+	var cameraFocusPoint = getPlanetsWorldPosition(2);
+	
 	// Calculate the View Projection Matrix
 	viewProjMatrix.setPerspective(30, canvas.width/canvas.height, 1, 150);
-	viewProjMatrix.lookAt(0, Math.sin(viewingAngle * Math.PI / 180) * viewingDistance, Math.cos(viewingAngle * Math.PI / 180) * viewingDistance, 0, 0, 0, 0, 1, 0);
-
+	viewProjMatrix.lookAt(0, Math.sin(viewingAngle * Math.PI / 180) * viewingDistance, Math.cos(viewingAngle * Math.PI / 180) * viewingDistance, cameraFocusPoint[0], cameraFocusPoint[1], -cameraFocusPoint[2], 0, 1, 0);
+//	viewProjMatrix.translate(-planetOrbitDistance[2] * globalOrbitDistance, 0, 0)
+//	viewProjMatrix.rotate(planetOrbitAngle[2], 0, 1, 0);
+	
 	// Recompute planetary rotation angles
 	var i = 0;
 	do{
@@ -547,4 +554,20 @@ function keyEvent() {
 	if (keys["down"]) { // Down Arrow: Rotate camera "downwards"
 		viewingAngle = viewingAngle <= minViewingAngle ? viewingAngle : viewingAngle - viewingAngleStep;
 	}
+}
+
+// Used to compute a planets position on global coordinates
+function getPlanetsWorldPosition(planetNum) {
+//	var transform = new Matrix4();
+//	transform.setRotate(planetOrbitAngle[planetNum], 0, 0, 1);
+//	transform.setTranslate(planetOrbitDistance[planetNum] * globalOrbitDistance, 0, 0);
+//	var inputVector = new Vector3();
+//	inputVector.elements = new Float32Array([0, 0, 0, 0]);
+//	var result = transform.multiplyVector4(inputVector);
+//	return result.elements;
+	
+	var planetSin = Math.sin(planetOrbitAngle[planetNum] * Math.PI / 180);
+	var planetCos = Math.cos(planetOrbitAngle[planetNum] * Math.PI / 180);
+	var planetDistance = planetOrbitDistance[planetNum] * globalOrbitDistance;
+	return [planetCos * planetDistance, 0, planetSin * planetDistance];
 }
