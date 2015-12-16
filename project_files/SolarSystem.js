@@ -206,6 +206,9 @@ var minViewingDistance = 2;
 var minViewingAngle = -89;
 var maxViewingAngle = 89;
 
+// Planet to focus on
+var planetToFocus = 0;
+
 // Coordinate transformation matrices
 var g_modelMatrix = new Matrix4(), g_mvpMatrix = new Matrix4();
 
@@ -341,10 +344,13 @@ function draw(currentTime) {
 	// Process what keys are pressed
 	keyEvent();
 	
+	// Compute Earth's Location
+	var cameraFocusPoint = getPlanetsWorldPosition(planetToFocus);
+	
 	// Calculate the View Projection Matrix
 	viewProjMatrix.setPerspective(30, canvas.width/canvas.height, 1, 150);
-	viewProjMatrix.lookAt(0, Math.sin(viewingAngle * Math.PI / 180) * viewingDistance, Math.cos(viewingAngle * Math.PI / 180) * viewingDistance, 0, 0, 0, 0, 1, 0);
-
+	viewProjMatrix.lookAt(0, Math.sin(viewingAngle * Math.PI / 180) * viewingDistance, Math.cos(viewingAngle * Math.PI / 180) * viewingDistance, cameraFocusPoint[0], cameraFocusPoint[1], -cameraFocusPoint[2], 0, 1, 0);
+	
 	// Recompute planetary rotation angles
 	var i = 0;
 	do{
@@ -446,7 +452,16 @@ var keys = {
 		up: false,
 		down: false,
 		left: false,
-		right: false
+		right: false,
+		0: false,
+		1: false,
+		2: false,
+		3: false,
+		4: false,
+		5: false,
+		6: false,
+		7: false,
+		8: false
 };
 
 function keydown(ev) {
@@ -479,6 +494,42 @@ function keydown(ev) {
 			ev.preventDefault();
 			keys["down"] = true;
 			break;
+		case 48 : // 0: Focus on Sun
+		case 96 : // Numpad 0
+			keys["0"] = true;
+			break;
+		case 49 : // 1: Focus on Mercury
+		case 97 : // Numpad 1
+			keys["1"] = true;
+			break;
+		case 50 : // 2: Focus on Venus
+		case 98 : // Numpad 2
+			keys["2"] = true;
+			break;
+		case 51 : // 3: Focus on Earth
+		case 99 : // Numpad 3
+			keys["3"] = true;
+			break;
+		case 52 : // 4: Focus on Mars
+		case 100 : // Numpad 4
+			keys["4"] = true;
+			break;
+		case 53 : // 5: Focus on Jupiter
+		case 101 : // Numpad 5
+			keys["5"] = true;
+			break;
+		case 54 : // 6: Focus on Saturn
+		case 102 : // Numpad 6
+			keys["6"] = true;
+			break;
+		case 55 : // 7: Focus on Uranus
+		case 103 : // Numpad 7
+			keys["7"] = true;
+			break;
+		case 56 : // 8: Focus on Neptune
+		case 104 : // Numpad 8
+			keys["8"] = true;
+			break;
 		default : return; // No action
 	}
 }
@@ -508,6 +559,42 @@ function keyup(ev) {
 			break;
 		case 40 : // Down Arrow: Rotate camera "downwards"
 			keys["down"] = false;
+			break;
+		case 48 : // 0: Focus on Sun
+		case 96 : // Numpad 0
+			keys["0"] = false;
+			break;
+		case 49 : // 1: Focus on Mercury
+		case 97 : // Numpad 1
+			keys["1"] = false;
+			break;
+		case 50 : // 2: Focus on Venus
+		case 98 : // Numpad 2
+			keys["2"] = false;
+			break;
+		case 51 : // 3: Focus on Earth
+		case 99 : // Numpad 3
+			keys["3"] = false;
+			break;
+		case 52 : // 4: Focus on Mars
+		case 100 : // Numpad 4
+			keys["4"] = false;
+			break;
+		case 53 : // 5: Focus on Jupiter
+		case 101 : // Numpad 5
+			keys["5"] = false;
+			break;
+		case 54 : // 6: Focus on Saturn
+		case 102 : // Numpad 6
+			keys["6"] = false;
+			break;
+		case 55 : // 7: Focus on Uranus
+		case 103 : // Numpad 7
+			keys["7"] = false;
+			break;
+		case 56 : // 8: Focus on Neptune
+		case 104 : // Numpad 8
+			keys["8"] = false;
 			break;
 		default : return; // No action
 	}
@@ -546,5 +633,37 @@ function keyEvent() {
 	
 	if (keys["down"]) { // Down Arrow: Rotate camera "downwards"
 		viewingAngle = viewingAngle <= minViewingAngle ? viewingAngle : viewingAngle - viewingAngleStep;
+	}
+	
+	if (keys["0"]) { // 0: Focus on Sun
+		planetToFocus = 0;
+	} else if (keys["1"]) { // 1: Focus on Mercury
+		planetToFocus = 1;
+	} else if (keys["2"]) { // 2: Focus on Venus
+		planetToFocus = 2;
+	} else if (keys["3"]) { // 3: Focus on Earth
+		planetToFocus = 3;
+	} else if (keys["4"]) { // 4: Focus on Mars
+		planetToFocus = 4;
+	} else if (keys["5"]) { // 5: Focus on Jupiter
+		planetToFocus = 5;
+	} else if (keys["6"]) { // 6: Focus on Saturn
+		planetToFocus = 6;
+	} else if (keys["7"]) { // 7: Focus on Uranus
+		planetToFocus = 7;
+	} else if (keys["8"]) { // 8: Focus on Neptune
+		planetToFocus = 8;
+	}
+}
+
+// Used to compute a planets position on global coordinates
+function getPlanetsWorldPosition(planetNum) {
+	if (planetNum !== 0){
+		var planetSin = Math.sin(planetOrbitAngle[planetNum - 1] * Math.PI / 180);
+		var planetCos = Math.cos(planetOrbitAngle[planetNum - 1] * Math.PI / 180);
+		var planetDistance = planetOrbitDistance[planetNum - 1] * globalOrbitDistance;
+		return [planetCos * planetDistance, 0, planetSin * planetDistance];
+	} else {
+		return [0, 0, 0];
 	}
 }
