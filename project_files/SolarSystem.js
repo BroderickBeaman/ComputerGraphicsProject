@@ -33,7 +33,8 @@ function main() {
 	while( count < 10)
 	{
 		// Initialize shaders
-		program = initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE[count], count);
+		program = (count == 3) ? initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE[1], count) :
+			initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE[0], count);
 		
 		// Set clear color and enable the depth test
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);
