@@ -1,4 +1,4 @@
-var program, canvas, gl, n;
+var program, canvas, gl, n, color = [];
 var u_ModelMatrix = [];
 var u_MvpMatrix = [];
 var u_NormalMatrix = [];
@@ -7,13 +7,22 @@ var u_LightPosition = [];
 var u_EarthLightColor = [];
 var u_EarthLightPosition = [];
 var u_AmbientLight = [];
+var u_Color;
+var color = [];
 
 function main() {
 	// Retrieve <canvas> element
 	canvas = document.getElementById('webgl');
 
+//	color = [new Float32Array(1.0, 1.0, 0, 1.0),new Float32Array(0.71, 0.14, 0.07, 1.0), new Float32Array(0.91, 0.76, 0.5, 1.0), new Float32Array(0.2, 0.21, 0.60, 1.0),
+//	         new Float32Array(0.82, 0.22, 0.08, 1.0), new Float32Array(0.7, 0.45, 0.21, 1.0), new Float32Array(0.97, 0.88, 0.31, 1.0), new Float32Array(0.25, 0.87, 0.88, 1.0),
+//	         new Float32Array(0.44, 0.65, 0.98, 1.0), new Float32Array(0.97, 0.97, 0.97, 1.0)];
+	color = [[1.0, 1.0, 0, 1.0], [0.71, 0.14, 0.07, 1.0], [0.91, 0.76, 0.5, 1.0], [0.2, 0.21, 0.60, 1.0],
+	         [0.82, 0.22, 0.08, 1.0], [0.7, 0.45, 0.21, 1.0], [0.97, 0.88, 0.31, 1.0], [0.25, 0.87, 0.88, 1.0],
+	         [0.44, 0.65, 0.98, 1.0], [0.97, 0.97, 0.97, 1.0]];
+ 
 	// Get the rendering context for WebGL
-	gl = getWebGLContext(canvas);
+	gl = getWebGLContext(canvas);                            
 	if (!gl) {
 		console.log('Failed to get the rendering context for WebGL');
 		return;
@@ -21,16 +30,18 @@ function main() {
 	
 	var count = 0;
 	
-	while( count < VSHADER_SOURCE.length)
+	while( count < 10)
 	{
 		// Initialize shaders
-		program = initShaders(gl, VSHADER_SOURCE[count], FSHADER_SOURCE[count], count);
+		program = initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE[count], count);
 		
 		// Set clear color and enable the depth test
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		gl.enable(gl.DEPTH_TEST);
 	  	
 		// Get the storage locations of uniform variables
+		// Get the storage locations of uniform variables
+		u_Color = gl.getUniformLocation(gl.program, "u_Color");
 		u_ModelMatrix[count] = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
 		u_MvpMatrix[count] = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
 		u_NormalMatrix[count] = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
@@ -41,6 +52,7 @@ function main() {
 			u_EarthLightPosition[0] = gl.getUniformLocation(gl.program, 'u_LightPosition[0]');
 			u_EarthLightColor[1] = gl.getUniformLocation(gl.program, 'u_LightColor[1]');
 			u_EarthLightPosition[1] = gl.getUniformLocation(gl.program, 'u_LightPosition[1]');
+			gl.uniform4f(u_Color, color[count][0], color[count][1], color[count][2], color[count][3]);
 			gl.uniform3f(u_EarthLightColor[1], 2.2, 2.4, 2.0);
 			gl.uniform3f(u_EarthLightPosition[1], 0.0, 0.0, 0.0);
 		}else {
@@ -49,6 +61,7 @@ function main() {
 		}
 
 		if(!count){
+			gl.uniform4f(u_Color, color[count][0], color[count][1], color[count][2], color[count][3]);
 		 	// Set the light color (white)
 			gl.uniform3f(u_LightColor[count], 1.0, 0.5, 0.0);
 			// Set the light direction (in the world coordinate)
@@ -56,6 +69,7 @@ function main() {
 			// Set the ambient light
 			gl.uniform3f(u_AmbientLight[count], 1.0, 0.5, 0.0);
 		}else{
+			gl.uniform4f(u_Color, color[count][0], color[count][1], color[count][2], color[count][3]);
 		 	// Set the light color (white)
 			gl.uniform3f(u_LightColor[count], 2.2, 2.4, 2.0);
 			// Set the light direction (in the world coordinate)
@@ -98,8 +112,9 @@ function main() {
 // Code to create a sphere
 function initVertexBuffers(gl) {
 	// Increase to make spheres more smooth
-	var SPHERE_DIV = 20;
-	
+	var SPHERE_DIV = 20;	
+	gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
 	var i, ai, si, ci;
 	var j, aj, sj, cj;
 	var p1, p2;
@@ -375,6 +390,7 @@ function draw(currentTime) {
 		gl.program = program[i];
 		
 		// Draw planet i
+		// Recompute planetary r
 		pushMatrix(g_modelMatrix);
 		g_modelMatrix.rotate(planetOrbitAngle[i-1], 0, 1, 0);
 		g_modelMatrix.translate(planetOrbitDistance[i-1] * globalOrbitDistance, 0, 0);
@@ -396,8 +412,6 @@ function draw(currentTime) {
 
 			factor = 4*Math.min(Math.abs(180-planetOrbitAngle[8])/180, 1-Math.abs(180-planetOrbitAngle[8])/180);
 			shadowFactor = (5+Math.log(Math.abs(180-planetOrbitAngle[8])/180));
-
-			console.log(shadowFactor + ' ' + planetOrbitAngle[8] + ' ' + factor);
 
 			gl.uniform3f(u_EarthLightColor[0], lightIntensity[0]*factor, lightIntensity[1]*factor, lightIntensity[2]*factor);
 			gl.uniform3f(u_EarthLightColor[1], lightIntensity[0]*shadowFactor, lightIntensity[1]*shadowFactor, lightIntensity[2]*shadowFactor);
