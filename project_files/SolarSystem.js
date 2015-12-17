@@ -113,7 +113,6 @@ function main() {
 function initVertexBuffers(gl) {
 	// Increase to make spheres more smooth
 	var SPHERE_DIV = 20;	
-	gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
 	var i, ai, si, ci;
 	var j, aj, sj, cj;
@@ -374,10 +373,7 @@ function draw(currentTime) {
 	g_modelMatrix.setIdentity();
 	
 	i = 0;
-	var lightIntensity = [1.32, 1.44, 1.2];
 	var lightLocation = [];
-	var factor = 0;
-	var shadowFactor = 0;
 
 	// Draw the sun
 	gl.useProgram(program[i]);
@@ -390,7 +386,6 @@ function draw(currentTime) {
 		gl.program = program[i];
 		
 		// Draw planet i
-		// Recompute planetary r
 		pushMatrix(g_modelMatrix);
 		g_modelMatrix.rotate(planetOrbitAngle[i-1], 0, 1, 0);
 		g_modelMatrix.translate(planetOrbitDistance[i-1] * globalOrbitDistance, 0, 0);
@@ -409,13 +404,11 @@ function draw(currentTime) {
 			gl.useProgram(program[i]);
 			gl.program = program[i];
 			g_modelMatrix = popMatrix();
-
-			factor = 4*Math.min(Math.abs(180-planetOrbitAngle[8])/180, 1-Math.abs(180-planetOrbitAngle[8])/180);
-			shadowFactor = (5+Math.log(Math.abs(180-planetOrbitAngle[8])/180));
-
-			gl.uniform3f(u_EarthLightColor[0], lightIntensity[0]*factor, lightIntensity[1]*factor, lightIntensity[2]*factor);
-			gl.uniform3f(u_EarthLightColor[1], lightIntensity[0]*shadowFactor, lightIntensity[1]*shadowFactor, lightIntensity[2]*shadowFactor);
-			gl.uniform3f(u_EarthLightPosition[0], lightLocation[0], lightLocation[1], lightLocation[2]);
+			
+			gl.uniform3f(u_EarthLightColor[0], 0.72, 0.81, 0.63);
+ 			gl.uniform3f(u_EarthLightPosition[0], lightLocation[0], lightLocation[1], lightLocation[2]);
+ 			gl.uniform3f(u_EarthLightColor[1], 0.8, 0.9, 0.7);
+ 			gl.uniform3f(u_EarthLightPosition[1], 0.0, 0.0, 0.0);
 		}
 		
 		gl.useProgram(program[i]);
@@ -424,9 +417,6 @@ function draw(currentTime) {
 		drawSphere(gl, n, sunScale/sunToPlanetScale, viewProjMatrix, u_ModelMatrix[i], u_MvpMatrix[i], u_NormalMatrix[i]);		
 		g_modelMatrix = popMatrix();
 	}
-	
-//	if(currentTime - time > 1000)
-//		throw new Error("Something went badly wrong!");
 
 	requestAnimationFrame(draw);
 }
@@ -460,7 +450,7 @@ function drawSphere(gl, n, scale, viewProjMatrix, u_ModelMatrix, u_MvpMatrix, u_
 	g_normalMatrix.transpose();
 	gl.uniformMatrix4fv(u_NormalMatrix, false, g_normalMatrix.elements);
 	
-	// Drawh
+	// Draw
 	gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_SHORT, 0);
 	
 	g_modelMatrix = popMatrix();  // Retrieve the old model matrix
