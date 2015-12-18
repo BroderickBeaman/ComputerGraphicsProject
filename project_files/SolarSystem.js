@@ -33,7 +33,8 @@ function main() {
 	while( count < 10)
 	{
 		// Initialize shaders
-		program = initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE[count], count);
+		program = (count == 3) ? initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE[1], count) :
+			initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE[0], count);
 		
 		// Set clear color and enable the depth test
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -53,7 +54,7 @@ function main() {
 			u_EarthLightColor[1] = gl.getUniformLocation(gl.program, 'u_LightColor[1]');
 			u_EarthLightPosition[1] = gl.getUniformLocation(gl.program, 'u_LightPosition[1]');
 			gl.uniform4f(u_Color, color[count][0], color[count][1], color[count][2], color[count][3]);
-			gl.uniform3f(u_EarthLightColor[1], 2.2, 2.4, 2.0);
+			gl.uniform3f(u_EarthLightColor[1], 1.1, 1.2, 1.0);
 			gl.uniform3f(u_EarthLightPosition[1], 0.0, 0.0, 0.0);
 		}else {
 			u_LightColor[count] = gl.getUniformLocation(gl.program, 'u_LightColor');
@@ -71,7 +72,7 @@ function main() {
 		}else{
 			gl.uniform4f(u_Color, color[count][0], color[count][1], color[count][2], color[count][3]);
 		 	// Set the light color (white)
-			gl.uniform3f(u_LightColor[count], 2.2, 2.4, 2.0);
+			gl.uniform3f(u_LightColor[count], 1.1, 1.2, 1.0);
 			// Set the light direction (in the world coordinate)
 			gl.uniform3f(u_LightPosition[count], 0.0, 0.0, 0.0);
 			// Set the ambient light
@@ -373,7 +374,10 @@ function draw(currentTime) {
 	g_modelMatrix.setIdentity();
 	
 	i = 0;
+	var lightIntensity = [0.924, 1.008, 0.84];
 	var lightLocation = [];
+	var factor = 0;
+	var shadowFactor = 0;
 
 	// Draw the sun
 	gl.useProgram(program[i]);
@@ -397,6 +401,11 @@ function draw(currentTime) {
 			pushMatrix(g_modelMatrix);
 			g_modelMatrix.rotate(planetOrbitAngle[8], 0.3, 1, -0.2);
 			g_modelMatrix.translate(planetOrbitDistance[8] * moonOrbitDistance, 0, 0);
+
+			factor = Math.min(1, 6*(1-Math.abs(180-planetOrbitAngle[8])/180));
+			shadowFactor = (5+Math.log(Math.abs(180-planetOrbitAngle[8])/180));
+-
+			gl.uniform3f(u_LightColor[9], lightIntensity[0]*factor, lightIntensity[1]*factor, lightIntensity[2]*factor);
 			drawSphere(gl, n, moonScale, viewProjMatrix, u_ModelMatrix[9], u_MvpMatrix[9], u_NormalMatrix[9]);
 			lightLocation[0] = g_modelMatrix.elements[12];
 			lightLocation[1] = g_modelMatrix.elements[13];
@@ -404,11 +413,12 @@ function draw(currentTime) {
 			gl.useProgram(program[i]);
 			gl.program = program[i];
 			g_modelMatrix = popMatrix();
-			
-			gl.uniform3f(u_EarthLightColor[0], 0.72, 0.81, 0.63);
- 			gl.uniform3f(u_EarthLightPosition[0], lightLocation[0], lightLocation[1], lightLocation[2]);
- 			gl.uniform3f(u_EarthLightColor[1], 0.8, 0.9, 0.7);
- 			gl.uniform3f(u_EarthLightPosition[1], 0.0, 0.0, 0.0);
+
+			factor = 4*Math.min(Math.abs(180-planetOrbitAngle[8])/180, 1-Math.abs(180-planetOrbitAngle[8])/180);
+
+			gl.uniform3f(u_EarthLightColor[0], lightIntensity[0]*factor, lightIntensity[1]*factor, lightIntensity[2]*factor);
+			gl.uniform3f(u_EarthLightColor[1], lightIntensity[0]*shadowFactor, lightIntensity[1]*shadowFactor, lightIntensity[2]*shadowFactor);
+			gl.uniform3f(u_EarthLightPosition[0], lightLocation[0], lightLocation[1], lightLocation[2]);
 		}
 		
 		gl.useProgram(program[i]);
