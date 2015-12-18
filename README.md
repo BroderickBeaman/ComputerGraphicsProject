@@ -9,6 +9,10 @@ the sizes of the planets are not. This is because it would be very hard to see a
 An interesting feature to note is that we have an implementation of multiple light sources. The sun acts as as the primary light source for The Solar System 
 and The Earth's moon projects a small amount of light onto Earth as well simulating the moon reflecting light from the sun onto Earth.
 
+You can also note that when The Moon is directly behind or in front of the earth, it doesn't reflect any light onto Earth. 
+On top of this, light is not cast on the moon when it is directly behind The Earth. 
+Similarly, the intensity of The Sun's light on Earth is lowered when The Moon is directly in front of The Earth.
+
 Controls:
 
 Q: Decreases the speed of the simulation
