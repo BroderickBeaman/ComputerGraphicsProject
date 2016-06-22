@@ -1,17 +1,28 @@
-var program, canvas, gl, n;
+var program, canvas, gl, n, color = [];
 var u_ModelMatrix = [];
 var u_MvpMatrix = [];
 var u_NormalMatrix = [];
 var u_LightColor = [];
 var u_LightPosition = [];
+var u_EarthLightColor = [];
+var u_EarthLightPosition = [];
 var u_AmbientLight = [];
+var u_Color;
+var color = [];
 
 function main() {
 	// Retrieve <canvas> element
 	canvas = document.getElementById('webgl');
 
+//	color = [new Float32Array(1.0, 1.0, 0, 1.0),new Float32Array(0.71, 0.14, 0.07, 1.0), new Float32Array(0.91, 0.76, 0.5, 1.0), new Float32Array(0.2, 0.21, 0.60, 1.0),
+//	         new Float32Array(0.82, 0.22, 0.08, 1.0), new Float32Array(0.7, 0.45, 0.21, 1.0), new Float32Array(0.97, 0.88, 0.31, 1.0), new Float32Array(0.25, 0.87, 0.88, 1.0),
+//	         new Float32Array(0.44, 0.65, 0.98, 1.0), new Float32Array(0.97, 0.97, 0.97, 1.0)];
+	color = [[1.0, 1.0, 0, 1.0], [0.71, 0.14, 0.07, 1.0], [0.91, 0.76, 0.5, 1.0], [0.2, 0.21, 0.60, 1.0],
+	         [0.82, 0.22, 0.08, 1.0], [0.7, 0.45, 0.21, 1.0], [0.97, 0.88, 0.31, 1.0], [0.25, 0.87, 0.88, 1.0],
+	         [0.44, 0.65, 0.98, 1.0], [0.97, 0.97, 0.97, 1.0]];
+ 
 	// Get the rendering context for WebGL
-	gl = getWebGLContext(canvas);
+	gl = getWebGLContext(canvas);                            
 	if (!gl) {
 		console.log('Failed to get the rendering context for WebGL');
 		return;
@@ -19,49 +30,70 @@ function main() {
 	
 	var count = 0;
 	
-	while( count < VSHADER_SOURCE.length)
+	while( count < 10)
 	{
 		// Initialize shaders
-		program = initShaders(gl, VSHADER_SOURCE[count], FSHADER_SOURCE[count], count);
+		program = (count == 3) ? initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE[1], count) :
+			initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE[0], count);
 		
 		// Set clear color and enable the depth test
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		gl.enable(gl.DEPTH_TEST);
 	  	
 		// Get the storage locations of uniform variables
+		// Get the storage locations of uniform variables
+		u_Color = gl.getUniformLocation(gl.program, "u_Color");
 		u_ModelMatrix[count] = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
-	  	u_MvpMatrix[count] = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
-	  	u_NormalMatrix[count] = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
-	  	u_LightColor[count] = gl.getUniformLocation(gl.program, 'u_LightColor');
-	  	u_LightPosition[count] = gl.getUniformLocation(gl.program, 'u_LightPosition');
-	  	u_AmbientLight[count] = gl.getUniformLocation(gl.program, 'u_AmbientLight');
+		u_MvpMatrix[count] = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
+		u_NormalMatrix[count] = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
+		u_AmbientLight[count] = gl.getUniformLocation(gl.program, 'u_AmbientLight');
 
-	  	if(count){
-		   	// Set the light color (white)
-			gl.uniform3f(u_LightColor[count], 0.8, 0.8, 0.8);
+		if(count == 3){
+			u_EarthLightColor[0] = gl.getUniformLocation(gl.program, 'u_LightColor[0]');
+			u_EarthLightPosition[0] = gl.getUniformLocation(gl.program, 'u_LightPosition[0]');
+			u_EarthLightColor[1] = gl.getUniformLocation(gl.program, 'u_LightColor[1]');
+			u_EarthLightPosition[1] = gl.getUniformLocation(gl.program, 'u_LightPosition[1]');
+			gl.uniform4f(u_Color, color[count][0], color[count][1], color[count][2], color[count][3]);
+			gl.uniform3f(u_EarthLightColor[1], 1.1, 1.2, 1.0);
+			gl.uniform3f(u_EarthLightPosition[1], 0.0, 0.0, 0.0);
+		}else {
+			u_LightColor[count] = gl.getUniformLocation(gl.program, 'u_LightColor');
+			u_LightPosition[count] = gl.getUniformLocation(gl.program, 'u_LightPosition');
+		}
+
+		if(!count){
+			gl.uniform4f(u_Color, color[count][0], color[count][1], color[count][2], color[count][3]);
+		 	// Set the light color (white)
+			gl.uniform3f(u_LightColor[count], 1.0, 0.5, 0.0);
+			// Set the light direction (in the world coordinate)
+			gl.uniform3f(u_LightPosition[count], 0.0, 0.8, 0.8);
+			// Set the ambient light
+			gl.uniform3f(u_AmbientLight[count], 1.0, 0.5, 0.0);
+		}else{
+			gl.uniform4f(u_Color, color[count][0], color[count][1], color[count][2], color[count][3]);
+		 	// Set the light color (white)
+			gl.uniform3f(u_LightColor[count], 1.1, 1.2, 1.0);
 			// Set the light direction (in the world coordinate)
 			gl.uniform3f(u_LightPosition[count], 0.0, 0.0, 0.0);
 			// Set the ambient light
-			gl.uniform3f(u_AmbientLight[count], 0.2, 0.2, 0.2);
-	  	}else{
-		   	// Set the light color (white)
-			gl.uniform3f(u_LightColor[count], 1.0, 0.5, 0);
-			// Set the light direction (in the world coordinate)
-			gl.uniform3f(u_LightPosition[count], 0, 0.8, 0.8);
-			// Set the ambient light
-			gl.uniform3f(u_AmbientLight[count], 1.0, 0.5, 0);
-	  	}
+			gl.uniform3f(u_AmbientLight[count], 0.15, 0.15, 0.15);
+		}
 	  	
 	  	//Error if any of the shaders failed to initialize
-	  	if (!u_ModelMatrix[count] || !u_MvpMatrix[count] || !u_NormalMatrix[count] || !u_LightColor[count] || !u_LightPosition[count] || !u_AmbientLight[count]) { 
+	  	if (count != 3 && (!u_ModelMatrix[count] || !u_MvpMatrix[count] || !u_NormalMatrix[count] || !u_LightColor[count] || !u_LightPosition[count] || !u_AmbientLight[count])) { 
 	  	    console.log('Failed to get the storage location' + count);
 	  	    return;
+	  	}else if( count === 3 && (!u_EarthLightColor[0] || !u_EarthLightColor[1] || !u_EarthLightPosition[0] || !u_EarthLightPosition[1] || !u_ModelMatrix[count] || !u_MvpMatrix[count] || !u_NormalMatrix[count] || !u_AmbientLight[count])) {
+	  		console.log('Failed to get the storage location' + count);
+	  	    return;
 	  	}
+	  	
 	  	count++;
 	}
 	
 	// Set the vertex coordinates and the color.
 	n = initVertexBuffers(gl);
+
 	if (n < 0) {
 		console.log('Failed to set the vertex information');
 		return;
@@ -81,8 +113,8 @@ function main() {
 // Code to create a sphere
 function initVertexBuffers(gl) {
 	// Increase to make spheres more smooth
-	var SPHERE_DIV = 20;
-	
+	var SPHERE_DIV = 20;	
+
 	var i, ai, si, ci;
 	var j, aj, sj, cj;
 	var p1, p2;
@@ -186,6 +218,9 @@ var minViewingDistance = 2;
 var minViewingAngle = -89;
 var maxViewingAngle = 89;
 
+// Planet to focus on
+var planetToFocus = 0;
+
 // Coordinate transformation matrices
 var g_modelMatrix = new Matrix4(), g_mvpMatrix = new Matrix4();
 
@@ -202,7 +237,7 @@ var sunToPlanetScale = 3;
 var globalOrbitVelocity = 0.6;
 var globalOrbitVelocityStep = 0.02;
 
-// Global scale of orbital distances
+// Global scale of shaderProgram.lightingDirectionUniformorbital distances
 var globalOrbitDistance = 5;
 var globalOrbitDistanceStep = 0.1;
 var minGlobalOrbitDistance = 0.8;
@@ -210,7 +245,7 @@ var minGlobalOrbitDistance = 0.8;
 // Moons orbit steps
 var moonOrbitDistance = 5;
 var moonOrbitDistanceStep = 0.05;
-var minMoonOrbitDistance = 3.6;
+var minMoonOrbitDistance = 4;
 
 var planetOrbitAngle = [];
 // Angles of rotation around the sun
@@ -257,10 +292,31 @@ var frameRateElement = document.getElementById("frameRate");
 var frameRateNode = document.createTextNode("");
 frameRateElement.appendChild(frameRateNode);
 
-// HTML elements for earth year calculation
+// HTML elements for year calculation
+var mercuryYearElement = document.getElementById("mercuryYear");
+var mercuryYearNode = document.createTextNode("");
+mercuryYearElement.appendChild(mercuryYearNode);
+var venusYearElement = document.getElementById("venusYear");
+var venusYearNode = document.createTextNode("");
+venusYearElement.appendChild(venusYearNode);
 var earthYearElement = document.getElementById("earthYear");
 var earthYearNode = document.createTextNode("");
 earthYearElement.appendChild(earthYearNode);
+var marsYearElement = document.getElementById("marsYear");
+var marsYearNode = document.createTextNode("");
+marsYearElement.appendChild(marsYearNode);
+var jupiterYearElement = document.getElementById("jupiterYear");
+var jupiterYearNode = document.createTextNode("");
+jupiterYearElement.appendChild(jupiterYearNode);
+var saturnYearElement = document.getElementById("saturnYear");
+var saturnYearNode = document.createTextNode("");
+saturnYearElement.appendChild(saturnYearNode);
+var uranusYearElement = document.getElementById("uranusYear");
+var uranusYearNode = document.createTextNode("");
+uranusYearElement.appendChild(uranusYearNode);
+var neptuneYearElement = document.getElementById("neptuneYear");
+var neptuneYearNode = document.createTextNode("");
+neptuneYearElement.appendChild(neptuneYearNode);
 
 function draw(currentTime) {
 	
@@ -282,14 +338,31 @@ function draw(currentTime) {
 	// Earth year calculation
 	var earthYearInSeconds = 6 / (globalOrbitVelocity / 0.6);
 	earthYearNode.nodeValue = earthYearInSeconds.toFixed(2);
+	var mercuryYearInSeconds = earthYearInSeconds / planetOrbitVelocity[0];
+	mercuryYearNode.nodeValue = mercuryYearInSeconds.toFixed(2);
+	var venusYearInSeconds = earthYearInSeconds / planetOrbitVelocity[1];
+	venusYearNode.nodeValue = venusYearInSeconds.toFixed(2);
+	var marsYearInSeconds = earthYearInSeconds / planetOrbitVelocity[3];
+	marsYearNode.nodeValue = marsYearInSeconds.toFixed(2);
+	var jupiterYearInSeconds = earthYearInSeconds / planetOrbitVelocity[4];
+	jupiterYearNode.nodeValue = jupiterYearInSeconds.toFixed(2);
+	var saturnYearInSeconds = earthYearInSeconds / planetOrbitVelocity[5];
+	saturnYearNode.nodeValue = saturnYearInSeconds.toFixed(2);
+	var uranusYearInSeconds = earthYearInSeconds / planetOrbitVelocity[6];
+	uranusYearNode.nodeValue = uranusYearInSeconds.toFixed(2);
+	var neptuneYearInSeconds = earthYearInSeconds / planetOrbitVelocity[7];
+	neptuneYearNode.nodeValue = neptuneYearInSeconds.toFixed(2);
 	
 	// Process what keys are pressed
 	keyEvent();
 	
+	// Compute Earth's Location
+	var cameraFocusPoint = getPlanetsWorldPosition(planetToFocus);
+	
 	// Calculate the View Projection Matrix
 	viewProjMatrix.setPerspective(30, canvas.width/canvas.height, 1, 150);
-	viewProjMatrix.lookAt(0, Math.sin(viewingAngle * Math.PI / 180) * viewingDistance, Math.cos(viewingAngle * Math.PI / 180) * viewingDistance, 0, 0, 0, 0, 1, 0);
-
+	viewProjMatrix.lookAt(0, Math.sin(viewingAngle * Math.PI / 180) * viewingDistance, Math.cos(viewingAngle * Math.PI / 180) * viewingDistance, cameraFocusPoint[0], cameraFocusPoint[1], -cameraFocusPoint[2], 0, 1, 0);
+	
 	// Recompute planetary rotation angles
 	var i = 0;
 	do{
@@ -301,11 +374,15 @@ function draw(currentTime) {
 	g_modelMatrix.setIdentity();
 	
 	i = 0;
-	
+	var lightIntensity = [0.924, 1.008, 0.84];
+	var lightLocation = [];
+	var factor = 0;
+	var shadowFactor = 0;
+
 	// Draw the sun
 	gl.useProgram(program[i]);
 	gl.program = program[i];
-	drawSphere(gl, n, sunScale, viewProjMatrix, u_ModelMatrix[i],  u_MvpMatrix[i], u_NormalMatrix[i], i);
+	drawSphere(gl, n, sunScale, viewProjMatrix, u_ModelMatrix[i],  u_MvpMatrix[i], u_NormalMatrix[i]);
 	
 	while(++i < program.length-1){
 
@@ -316,24 +393,41 @@ function draw(currentTime) {
 		pushMatrix(g_modelMatrix);
 		g_modelMatrix.rotate(planetOrbitAngle[i-1], 0, 1, 0);
 		g_modelMatrix.translate(planetOrbitDistance[i-1] * globalOrbitDistance, 0, 0);
-		drawSphere(gl, n, sunScale/sunToPlanetScale, viewProjMatrix, u_ModelMatrix[i], u_MvpMatrix[i], u_NormalMatrix[i]);
-		
-		if(i == 3){
+	
+		if(i === 3){
+
 			gl.useProgram(program[9]);
 			gl.program = program[9];
 			pushMatrix(g_modelMatrix);
-			g_modelMatrix.rotate(planetOrbitAngle[8], 0, 1, 0);
+			g_modelMatrix.rotate(planetOrbitAngle[8], 0.3, 1, -0.2);
 			g_modelMatrix.translate(planetOrbitDistance[8] * moonOrbitDistance, 0, 0);
+
+			factor = Math.min(1, 6*(1-Math.abs(180-planetOrbitAngle[8])/180));
+			shadowFactor = (5+Math.log(Math.abs(180-planetOrbitAngle[8])/180));
+-
+			gl.uniform3f(u_LightColor[9], lightIntensity[0]*factor, lightIntensity[1]*factor, lightIntensity[2]*factor);
 			drawSphere(gl, n, moonScale, viewProjMatrix, u_ModelMatrix[9], u_MvpMatrix[9], u_NormalMatrix[9]);
+			lightLocation[0] = g_modelMatrix.elements[12];
+			lightLocation[1] = g_modelMatrix.elements[13];
+			lightLocation[2] = g_modelMatrix.elements[14];
+			gl.useProgram(program[i]);
+			gl.program = program[i];
 			g_modelMatrix = popMatrix();
+
+			factor = 4*Math.min(Math.abs(180-planetOrbitAngle[8])/180, 1-Math.abs(180-planetOrbitAngle[8])/180);
+
+			gl.uniform3f(u_EarthLightColor[0], lightIntensity[0]*factor, lightIntensity[1]*factor, lightIntensity[2]*factor);
+			gl.uniform3f(u_EarthLightColor[1], lightIntensity[0]*shadowFactor, lightIntensity[1]*shadowFactor, lightIntensity[2]*shadowFactor);
+			gl.uniform3f(u_EarthLightPosition[0], lightLocation[0], lightLocation[1], lightLocation[2]);
 		}
 		
 		gl.useProgram(program[i]);
 		gl.program = program[i];
-		
+
+		drawSphere(gl, n, sunScale/sunToPlanetScale, viewProjMatrix, u_ModelMatrix[i], u_MvpMatrix[i], u_NormalMatrix[i]);		
 		g_modelMatrix = popMatrix();
 	}
-	
+
 	requestAnimationFrame(draw);
 }
 
@@ -380,7 +474,16 @@ var keys = {
 		up: false,
 		down: false,
 		left: false,
-		right: false
+		right: false,
+		0: false,
+		1: false,
+		2: false,
+		3: false,
+		4: false,
+		5: false,
+		6: false,
+		7: false,
+		8: false
 };
 
 function keydown(ev) {
@@ -413,6 +516,42 @@ function keydown(ev) {
 			ev.preventDefault();
 			keys["down"] = true;
 			break;
+		case 48 : // 0: Focus on Sun
+		case 96 : // Numpad 0
+			keys["0"] = true;
+			break;
+		case 49 : // 1: Focus on Mercury
+		case 97 : // Numpad 1
+			keys["1"] = true;
+			break;
+		case 50 : // 2: Focus on Venus
+		case 98 : // Numpad 2
+			keys["2"] = true;
+			break;
+		case 51 : // 3: Focus on Earth
+		case 99 : // Numpad 3
+			keys["3"] = true;
+			break;
+		case 52 : // 4: Focus on Mars
+		case 100 : // Numpad 4
+			keys["4"] = true;
+			break;
+		case 53 : // 5: Focus on Jupiter
+		case 101 : // Numpad 5
+			keys["5"] = true;
+			break;
+		case 54 : // 6: Focus on Saturn
+		case 102 : // Numpad 6
+			keys["6"] = true;
+			break;
+		case 55 : // 7: Focus on Uranus
+		case 103 : // Numpad 7
+			keys["7"] = true;
+			break;
+		case 56 : // 8: Focus on Neptune
+		case 104 : // Numpad 8
+			keys["8"] = true;
+			break;
 		default : return; // No action
 	}
 }
@@ -442,6 +581,42 @@ function keyup(ev) {
 			break;
 		case 40 : // Down Arrow: Rotate camera "downwards"
 			keys["down"] = false;
+			break;
+		case 48 : // 0: Focus on Sun
+		case 96 : // Numpad 0
+			keys["0"] = false;
+			break;
+		case 49 : // 1: Focus on Mercury
+		case 97 : // Numpad 1
+			keys["1"] = false;
+			break;
+		case 50 : // 2: Focus on Venus
+		case 98 : // Numpad 2
+			keys["2"] = false;
+			break;
+		case 51 : // 3: Focus on Earth
+		case 99 : // Numpad 3
+			keys["3"] = false;
+			break;
+		case 52 : // 4: Focus on Mars
+		case 100 : // Numpad 4
+			keys["4"] = false;
+			break;
+		case 53 : // 5: Focus on Jupiter
+		case 101 : // Numpad 5
+			keys["5"] = false;
+			break;
+		case 54 : // 6: Focus on Saturn
+		case 102 : // Numpad 6
+			keys["6"] = false;
+			break;
+		case 55 : // 7: Focus on Uranus
+		case 103 : // Numpad 7
+			keys["7"] = false;
+			break;
+		case 56 : // 8: Focus on Neptune
+		case 104 : // Numpad 8
+			keys["8"] = false;
 			break;
 		default : return; // No action
 	}
@@ -480,5 +655,37 @@ function keyEvent() {
 	
 	if (keys["down"]) { // Down Arrow: Rotate camera "downwards"
 		viewingAngle = viewingAngle <= minViewingAngle ? viewingAngle : viewingAngle - viewingAngleStep;
+	}
+	
+	if (keys["0"]) { // 0: Focus on Sun
+		planetToFocus = 0;
+	} else if (keys["1"]) { // 1: Focus on Mercury
+		planetToFocus = 1;
+	} else if (keys["2"]) { // 2: Focus on Venus
+		planetToFocus = 2;
+	} else if (keys["3"]) { // 3: Focus on Earth
+		planetToFocus = 3;
+	} else if (keys["4"]) { // 4: Focus on Mars
+		planetToFocus = 4;
+	} else if (keys["5"]) { // 5: Focus on Jupiter
+		planetToFocus = 5;
+	} else if (keys["6"]) { // 6: Focus on Saturn
+		planetToFocus = 6;
+	} else if (keys["7"]) { // 7: Focus on Uranus
+		planetToFocus = 7;
+	} else if (keys["8"]) { // 8: Focus on Neptune
+		planetToFocus = 8;
+	}
+}
+
+// Used to compute a planets position on global coordinates
+function getPlanetsWorldPosition(planetNum) {
+	if (planetNum !== 0){
+		var planetSin = Math.sin(planetOrbitAngle[planetNum - 1] * Math.PI / 180);
+		var planetCos = Math.cos(planetOrbitAngle[planetNum - 1] * Math.PI / 180);
+		var planetDistance = planetOrbitDistance[planetNum - 1] * globalOrbitDistance;
+		return [planetCos * planetDistance, 0, planetSin * planetDistance];
+	} else {
+		return [0, 0, 0];
 	}
 }

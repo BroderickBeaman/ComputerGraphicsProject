@@ -34,7 +34,14 @@
     
     <div id="overlay">
    		<div>FPS: <span id="frameRate"></span></div>
-   		<div>1 Earth Year = <span id="earthYear"></span>s</div>
+   		<div>1 Mercury Year = <span id="mercuryYear"></span> s</div>
+   		<div>1 Venus Year = <span id="venusYear"></span> s</div>
+   		<div>1 Earth Year = <span id="earthYear"></span> s</div>
+   		<div>1 Mars Year = <span id="marsYear"></span> s</div>
+   		<div>1 Jupiter Year = <span id="jupiterYear"></span> s</div>
+   		<div>1 Saturn Year = <span id="saturnYear"></span> s</div>
+   		<div>1 Uranus Year = <span id="uranusYear"></span> s</div>
+   		<div>1 Neptune Year = <span id="neptuneYear"></span> s</div>
    	</div>
    	
     <div id="controls">
@@ -43,19 +50,28 @@
     	W: Increase speed<br><br>
     	A: Shrink orbital distances<br>
     	S: Expand orbital distances<br><br>
-    	Left: Zoom out<br>
-    	Right: Zoom in<br><br>
+    	Left: Move camera farther from The Sun<br>
+    	Right: Move camera closer to The Sun<br><br>
     	Up: Rotate camera up<br>
-    	Down: Rotate camera down<br>
+    	Down: Rotate camera down<br><br>
+    	Focus Controls:<br><br>
+    	0: Sun<br>
+    	1: Mercury<br>
+    	2: Venus<br>
+    	3: Earth<br>
+    	4: Mars<br>
+    	5: Jupiter<br>
+    	6: Saturn<br>
+    	7: Uranus<br>
+    	8: Neptune
     </div>
 
     <script src="../lib/webgl-utils.js"></script>
     <script src="../lib/webgl-debug.js"></script>
     <script src="../lib/cuon-utils.js"></script>
     <script src="../lib/cuon-matrix.js"></script>
-    <script src="shaders/SunVertexShader.js"></script>
-    <script src="shaders/PlanetVertexShader.js"></script>
-    <script src="shaders/SunFragmentShader.js"></script>
+    <script src="shaders/VertexShader.js"></script>
+    <script src="shaders/FragmentShader.js"></script>
     <script src="SolarSystem.js"></script>
     
   </body>
